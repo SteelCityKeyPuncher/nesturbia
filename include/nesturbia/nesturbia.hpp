@@ -1,0 +1,8 @@
+#ifndef NESTURBIA_NESTURBIA_HPP_INCLUDED
+#define NESTURBIA_NESTURBIA_HPP_INCLUDED
+
+namespace nesturbia {
+int nesturbia();
+}
+
+#endif // NESTURBIA_NESTURBIA_HPP_INCLUDED
