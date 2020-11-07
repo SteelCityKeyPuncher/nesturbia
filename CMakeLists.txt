@@ -15,6 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ## Library ##
 add_library(${PROJECT_NAME}
+  src/cpu.cpp
   src/nesturbia.cpp
 )
 
