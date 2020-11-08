@@ -4,7 +4,10 @@
 #include <cstdint>
 #include <functional>
 
+#include "nesturbia/types.hpp"
+
 namespace nesturbia {
+
 struct Cpu {
   // Types
   struct flags_t {
@@ -15,13 +18,13 @@ struct Cpu {
     bool V = false;
     bool N = false;
 
-    auto &operator=(uint8_t value) {
-      C = ((value & (1U << 0)) != 0);
-      Z = ((value & (1U << 1)) != 0);
-      I = ((value & (1U << 2)) != 0);
-      D = ((value & (1U << 3)) != 0);
-      V = ((value & (1U << 6)) != 0);
-      N = ((value & (1U << 7)) != 0);
+    auto &operator=(uint8 value) {
+      C = value.bit(0);
+      Z = value.bit(1);
+      I = value.bit(2);
+      D = value.bit(3);
+      V = value.bit(6);
+      N = value.bit(7);
 
       return *this;
     }
@@ -33,11 +36,11 @@ struct Cpu {
   using write_callback_t = std::function<void(uint16_t, uint8_t)>;
 
   // Data
-  uint8_t A;
-  uint8_t X;
-  uint8_t Y;
-  uint8_t S;
-  uint16_t PC;
+  uint8 A;
+  uint8 X;
+  uint8 Y;
+  uint8 S;
+  uint16 PC;
   flags_t P;
 
   read_callback_t readCallback;
@@ -51,12 +54,13 @@ struct Cpu {
   void Power();
 
   // Private functions
-  uint8_t read(uint16_t address);
-  uint16_t read16(uint16_t address);
+  uint8 read(uint16 address);
+  uint16 read16(uint16 address);
 
-  void write(uint16_t address, uint8_t value);
-  void write16(uint16_t address, uint16_t value);
+  void write(uint16 address, uint8 value);
+  void write16(uint16 address, uint16 value);
 };
+
 } // namespace nesturbia
 
 #endif // NESTURBIA_CPU_HPP_INCLUDED

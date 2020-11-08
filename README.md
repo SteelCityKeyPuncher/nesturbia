@@ -2,15 +2,22 @@
 
 A NES emulator written using the C++17 standard.
 
-## Building
+## How to Build
 
 ### Dependencies
 
-(TODO)
+Install the following dependencies:
+* git
+* CMake
 
 ### Cloning
 
-(TODO this uses submodules, so provide appropriate directions)
+```bash
+git clone TODO/nesturbia.git
+cd nesturbia
+git submodule init
+git submodule update
+```
 
 ### Compiling
 

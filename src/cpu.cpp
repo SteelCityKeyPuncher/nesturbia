@@ -3,6 +3,7 @@
 #include "nesturbia/cpu.hpp"
 
 namespace nesturbia {
+
 Cpu::Cpu(read_callback_t readCallback, write_callback_t writeCallback)
     : readCallback(std::move(readCallback)), writeCallback(std::move(writeCallback)) {}
 
@@ -17,7 +18,7 @@ void Cpu::Power() {
   cycles = 7;
 }
 
-uint8_t Cpu::read(uint16_t address) {
+uint8 Cpu::read(uint16 address) {
   if (!readCallback) {
     return 0xff;
   }
@@ -25,18 +26,19 @@ uint8_t Cpu::read(uint16_t address) {
   return readCallback(address);
 }
 
-uint16_t Cpu::read16(uint16_t address) {
-  return read(address) | (read(static_cast<uint16_t>(address + 1)) << 8);
+uint16 Cpu::read16(uint16 address) {
+  return read(address) | (read(static_cast<uint16>(address + 1)) << 8);
 }
 
-void Cpu::write(uint16_t address, uint8_t value) {
+void Cpu::write(uint16 address, uint8 value) {
   if (writeCallback) {
     writeCallback(address, value);
   }
 }
 
-void Cpu::write16(uint16_t address, uint16_t value) {
-  writeCallback(address, static_cast<uint8_t>(value));
-  writeCallback((uint16_t)(address + 1), static_cast<uint8_t>(value >> 8));
+void Cpu::write16(uint16 address, uint16 value) {
+  writeCallback(address, static_cast<uint8>(value));
+  writeCallback((uint16)(address + 1), static_cast<uint8>(value >> 8));
 }
+
 } // namespace nesturbia
