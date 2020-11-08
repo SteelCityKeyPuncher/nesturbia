@@ -149,6 +149,13 @@ template <addr_func_t T> static void op_adc(Cpu &cpu) {
   cpu.A = r;
 }
 
+template <addr_func_t T> static void op_and(Cpu &cpu) {
+  cpu.A &= cpu.read(T(cpu));
+
+  cpu.P.Z = cpu.A == 0;
+  cpu.P.N = cpu.A.bit(7);
+}
+
 static void op_nop(Cpu &) {}
 
 const std::array<instr_func_t, 256> instructions = {
@@ -159,11 +166,11 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0x20
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_and<addr_inx>, op_nop, op_nop, op_nop, op_and<addr_zpg>, op_nop, op_nop, op_nop,
+    op_and<addr_imm>, op_nop, op_nop, op_nop, op_and<addr_abs>, op_nop, op_nop,
     // 0x30
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_and<addr_iny>, op_nop, op_nop, op_nop, op_and<addr_zpx>, op_nop, op_nop, op_nop,
+    op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_nop, op_nop,
     // 0x40
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
