@@ -1,5 +1,6 @@
 add_executable(${PROJECT_NAME}-test
   tests/cpu/memory.cpp
+  tests/cpu/power.cpp
 )
 
 set_target_properties(${PROJECT_NAME}-test PROPERTIES CXX_STANDARD 17)
