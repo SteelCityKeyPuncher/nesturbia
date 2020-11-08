@@ -59,6 +59,9 @@ struct Cpu {
 
   void write(uint16 address, uint8 value);
   void write16(uint16 address, uint16 value);
+
+  void tick();
+  void executeInstruction();
 };
 
 } // namespace nesturbia

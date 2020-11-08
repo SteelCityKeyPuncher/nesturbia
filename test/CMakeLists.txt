@@ -1,4 +1,5 @@
 add_executable(${PROJECT_NAME}-test
+  tests/cpu/instructions/adc.cpp
   tests/cpu/memory.cpp
   tests/cpu/power.cpp
 )

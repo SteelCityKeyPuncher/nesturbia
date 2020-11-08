@@ -16,7 +16,7 @@ template <unsigned Precision> struct uint {
   operator type_t() const { return data; }
 
   [[nodiscard]] bool bit(int bit) const {
-    if (bit < 0 || bit >= (sizeof(type_t) * 8)) {
+    if (bit < 0 || bit >= static_cast<int>((sizeof(type_t) * 8))) {
       return false;
     }
 
