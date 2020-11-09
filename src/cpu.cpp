@@ -124,7 +124,10 @@ inline uint16 addr_acc(Cpu &) { return 0; }
 
 inline uint16 addr_imm(Cpu &cpu) { return cpu.PC++; }
 
-inline uint16 addr_ind(Cpu &) { return 0; }
+inline uint16 addr_ind(Cpu &) {
+  // TODO
+  return 0;
+}
 
 inline uint16 addr_inx(Cpu &cpu) {
   const auto l = static_cast<uint8>(cpu.read(cpu.PC++) + cpu.X);
@@ -391,16 +394,19 @@ template <addr_func_t T> static void op_sbc(Cpu &) {
   // TODO
 }
 
-static void op_sec(Cpu &) {
-  // TODO
+static void op_sec(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.C = true;
 }
 
-static void op_sed(Cpu &) {
-  // TODO
+static void op_sed(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.D = true;
 }
 
-static void op_sei(Cpu &) {
-  // TODO
+static void op_sei(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.I = true;
 }
 
 template <addr_func_t T> static void op_sta(Cpu &) {
