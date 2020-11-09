@@ -32,8 +32,8 @@ struct Cpu {
     operator unsigned() const { return C << 0 | Z << 1 | I << 2 | D << 3 | V << 6 | N << 7; }
   };
 
-  using read_callback_t = std::function<uint8_t(uint16_t)>;
-  using write_callback_t = std::function<void(uint16_t, uint8_t)>;
+  using read_callback_t = std::function<uint8(uint16)>;
+  using write_callback_t = std::function<void(uint16, uint8)>;
 
   // Data
   uint8 A;

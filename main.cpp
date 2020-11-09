@@ -3,7 +3,7 @@
 #include "nesturbia/nesturbia.hpp"
 
 int main() {
-  std::cout << nesturbia::nesturbia() << std::endl;
+  nesturbia::Nesturbia emulator;
 
   return 0;
 }
