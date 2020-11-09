@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/iny.cpp
   tests/cpu/instructions/jmp.cpp
   tests/cpu/instructions/jsr.cpp
+  tests/cpu/instructions/lda.cpp
   tests/cpu/instructions/ldx.cpp
   tests/cpu/instructions/ldy.cpp
   tests/cpu/instructions/lsr.cpp

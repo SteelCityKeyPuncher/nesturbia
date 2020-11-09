@@ -356,6 +356,13 @@ static void op_jsr(Cpu &cpu) {
   cpu.PC = addr_abs(cpu);
 }
 
+template <addr_func_t T> static void op_lda(Cpu &cpu) {
+  cpu.A = cpu.read(T(cpu));
+
+  cpu.P.Z = (cpu.A == 0);
+  cpu.P.N = cpu.A.bit(7);
+}
+
 template <addr_func_t T> static void op_ldx(Cpu &cpu) {
   cpu.X = cpu.read(T(cpu));
 
@@ -611,11 +618,13 @@ const std::array<instr_func_t, 256> instructions = {
     op_bcc, op_sta<addr_iny>, op_nop, op_nop, op_sty<addr_zpx>, op_sta<addr_zpx>, op_stx<addr_zpy>,
     op_nop, op_tya, op_sta<addr_aby>, op_txs, op_nop, op_nop, op_sta<addr_abx>, op_nop, op_nop,
     // 0xa0
-    op_ldy<addr_imm>, op_nop, op_ldx<addr_imm>, op_nop, op_ldy<addr_zpg>, op_nop, op_ldx<addr_zpg>,
-    op_nop, op_tay, op_nop, op_tax, op_nop, op_ldy<addr_abs>, op_nop, op_ldx<addr_abs>, op_nop,
+    op_ldy<addr_imm>, op_lda<addr_inx>, op_ldx<addr_imm>, op_nop, op_ldy<addr_zpg>,
+    op_lda<addr_zpg>, op_ldx<addr_zpg>, op_nop, op_tay, op_lda<addr_imm>, op_tax, op_nop,
+    op_ldy<addr_abs>, op_lda<addr_abs>, op_ldx<addr_abs>, op_nop,
     // 0xb0
-    op_bcs, op_nop, op_nop, op_nop, op_ldy<addr_zpx>, op_nop, op_ldx<addr_zpy>, op_nop, op_clv,
-    op_nop, op_tsx, op_nop, op_ldy<addr_abx>, op_nop, op_ldx<addr_aby>, op_nop,
+    op_bcs, op_lda<addr_iny>, op_nop, op_nop, op_ldy<addr_zpx>, op_lda<addr_zpx>, op_ldx<addr_zpy>,
+    op_nop, op_clv, op_lda<addr_aby>, op_tsx, op_nop, op_ldy<addr_abx>, op_lda<addr_abx>,
+    op_ldx<addr_aby>, op_nop,
     // 0xc0
     op_cpy<addr_imm>, op_cmp<addr_inx>, op_nop, op_nop, op_cpy<addr_zpg>, op_cmp<addr_zpg>,
     op_dec<addr_zpg>, op_nop, op_iny, op_cmp<addr_imm>, op_dex, op_nop, op_cpy<addr_abs>,
