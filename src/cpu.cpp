@@ -313,8 +313,11 @@ static void op_dey(Cpu &cpu) {
   cpu.P.N = cpu.Y.bit(7);
 }
 
-template <addr_func_t T> static void op_eor(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_eor(Cpu &cpu) {
+  cpu.A ^= cpu.read(T(cpu));
+
+  cpu.P.Z = cpu.A == 0;
+  cpu.P.N = cpu.A.bit(7);
 }
 
 template <addr_func_t T> static void op_inc(Cpu &cpu) {
