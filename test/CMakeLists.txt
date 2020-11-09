@@ -22,6 +22,12 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/dec.cpp
   tests/cpu/instructions/dex.cpp
   tests/cpu/instructions/dey.cpp
+  tests/cpu/instructions/tax.cpp
+  tests/cpu/instructions/tay.cpp
+  tests/cpu/instructions/tsx.cpp
+  tests/cpu/instructions/txa.cpp
+  tests/cpu/instructions/txs.cpp
+  tests/cpu/instructions/tya.cpp
   tests/cpu/memory.cpp
   tests/cpu/power.cpp
 )

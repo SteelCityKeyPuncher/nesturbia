@@ -315,6 +315,54 @@ static void op_dey(Cpu &cpu) {
 
 static void op_nop(Cpu &) {}
 
+static void op_tax(Cpu &cpu) {
+  cpu.tick();
+  cpu.X = cpu.A;
+
+  cpu.P.Z = (cpu.X == 0);
+  cpu.P.N = cpu.X.bit(7);
+}
+
+static void op_tay(Cpu &cpu) {
+  cpu.tick();
+  cpu.Y = cpu.A;
+
+  cpu.P.Z = (cpu.Y == 0);
+  cpu.P.N = cpu.Y.bit(7);
+}
+
+static void op_tsx(Cpu &cpu) {
+  cpu.tick();
+  cpu.X = cpu.S;
+
+  cpu.P.Z = (cpu.X == 0);
+  cpu.P.N = cpu.X.bit(7);
+}
+
+static void op_txa(Cpu &cpu) {
+  cpu.tick();
+  cpu.A = cpu.X;
+
+  cpu.P.Z = (cpu.A == 0);
+  cpu.P.N = cpu.A.bit(7);
+}
+
+static void op_txs(Cpu &cpu) {
+  cpu.tick();
+  cpu.S = cpu.X;
+
+  cpu.P.Z = (cpu.S == 0);
+  cpu.P.N = cpu.S.bit(7);
+}
+
+static void op_tya(Cpu &cpu) {
+  cpu.tick();
+  cpu.A = cpu.Y;
+
+  cpu.P.Z = (cpu.A == 0);
+  cpu.P.N = cpu.A.bit(7);
+}
+
 const std::array<instr_func_t, 256> instructions = {
     // 0x00
     op_brk, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpg>, op_nop, op_nop, op_nop,
@@ -341,16 +389,16 @@ const std::array<instr_func_t, 256> instructions = {
     op_bvs, op_adc<addr_iny>, op_nop, op_nop, op_nop, op_adc<addr_zpx>, op_nop, op_nop, op_nop,
     op_adc<addr_aby>, op_nop, op_nop, op_nop, op_adc<addr_abx>, op_nop, op_nop,
     // 0x80
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_dey, op_nop, op_nop, op_nop,
+    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_dey, op_nop, op_txa, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0x90
-    op_bcc, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_bcc, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_tya, op_nop, op_txs, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xa0
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_tay, op_nop, op_tax, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xb0
-    op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_clv, op_nop, op_nop, op_nop,
+    op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_clv, op_nop, op_tsx, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xc0
     op_cpy<addr_imm>, op_cmp<addr_inx>, op_nop, op_nop, op_cpy<addr_zpg>, op_cmp<addr_zpg>,
