@@ -202,6 +202,14 @@ static void op_bcs(Cpu &cpu) { branch(cpu, cpu.P.C); }
 
 static void op_beq(Cpu &cpu) { branch(cpu, cpu.P.Z); }
 
+template <addr_func_t T> static void op_bit(Cpu &cpu) {
+  const auto v = cpu.read(T(cpu));
+
+  cpu.P.Z = static_cast<uint8>(v & cpu.A) == 0;
+  cpu.P.V = v.bit(6);
+  cpu.P.N = v.bit(7);
+}
+
 static void op_nop(Cpu &) {}
 
 const std::array<instr_func_t, 256> instructions = {
@@ -212,8 +220,8 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpx>, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop, op_asl<addr_abx<false>>, op_nop,
     // 0x20
-    op_nop, op_and<addr_inx>, op_nop, op_nop, op_nop, op_and<addr_zpg>, op_nop, op_nop, op_nop,
-    op_and<addr_imm>, op_nop, op_nop, op_nop, op_and<addr_abs>, op_nop, op_nop,
+    op_nop, op_and<addr_inx>, op_nop, op_nop, op_bit<addr_zpg>, op_and<addr_zpg>, op_nop, op_nop,
+    op_nop, op_and<addr_imm>, op_nop, op_nop, op_bit<addr_abs>, op_and<addr_abs>, op_nop, op_nop,
     // 0x30
     op_nop, op_and<addr_iny>, op_nop, op_nop, op_nop, op_and<addr_zpx>, op_nop, op_nop, op_nop,
     op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_nop, op_nop,
