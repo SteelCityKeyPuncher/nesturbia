@@ -347,8 +347,10 @@ static void op_iny(Cpu &cpu) {
 
 template <addr_func_t T> static void op_jmp(Cpu &cpu) { cpu.PC = T(cpu); }
 
-static void op_jsr(Cpu &) {
-  // TODO
+static void op_jsr(Cpu &cpu) {
+  cpu.tick();
+  cpu.push16(cpu.PC + 2);
+  cpu.PC = addr_abs(cpu);
 }
 
 template <addr_func_t T> static void op_ldx(Cpu &) {
