@@ -125,8 +125,6 @@ inline uint16 addr_iny(Cpu &cpu) {
   return v + ySigned;
 }
 
-inline uint16 addr_rel(Cpu &) { return 0; }
-
 inline uint16 addr_zpg(Cpu &cpu) { return cpu.read(cpu.PC++); }
 
 inline uint16 addr_zpx(Cpu &cpu) {
@@ -186,6 +184,18 @@ template <addr_func_t T> static void op_asl(Cpu &cpu) {
   }
 }
 
+static void op_bcc(Cpu &cpu) {
+  const auto offset = static_cast<int8_t>(cpu.read(cpu.PC++));
+  if (!cpu.P.C) {
+    if (checkPageCross(cpu.PC, offset)) {
+      cpu.tick();
+    }
+
+    cpu.tick();
+    cpu.PC += offset;
+  }
+}
+
 static void op_nop(Cpu &) {}
 
 const std::array<instr_func_t, 256> instructions = {
@@ -217,7 +227,7 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0x90
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_bcc, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xa0
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
