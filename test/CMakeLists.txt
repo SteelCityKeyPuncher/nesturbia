@@ -6,6 +6,9 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/bcs.cpp
   tests/cpu/instructions/beq.cpp
   tests/cpu/instructions/bit.cpp
+  tests/cpu/instructions/bmi.cpp
+  tests/cpu/instructions/bne.cpp
+  tests/cpu/instructions/bpl.cpp
   tests/cpu/memory.cpp
   tests/cpu/power.cpp
 )
