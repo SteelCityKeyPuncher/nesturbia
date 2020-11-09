@@ -367,8 +367,11 @@ template <addr_func_t T> static void op_lsr(Cpu &) {
 
 static void op_nop(Cpu &cpu) { cpu.tick(); }
 
-template <addr_func_t T> static void op_ora(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_ora(Cpu &cpu) {
+  cpu.A |= cpu.read(T(cpu));
+
+  cpu.P.Z = cpu.A == 0;
+  cpu.P.N = cpu.A.bit(7);
 }
 
 static void op_pha(Cpu &cpu) {
@@ -497,11 +500,11 @@ static void op_tya(Cpu &cpu) {
 
 const std::array<instr_func_t, 256> instructions = {
     // 0x00
-    op_brk, op_ora<addr_iny>, op_nop, op_nop, op_nop, op_ora<addr_zpg>, op_asl<addr_zpg>, op_nop,
+    op_brk, op_ora<addr_inx>, op_nop, op_nop, op_nop, op_ora<addr_zpg>, op_asl<addr_zpg>, op_nop,
     op_php, op_ora<addr_imm>, op_asl<addr_acc>, op_nop, op_nop, op_ora<addr_abs>, op_asl<addr_abs>,
     op_nop,
     // 0x10
-    op_bpl, op_ora<addr_iny>, op_nop, op_nop, op_nop, op_ora<addr_zpg>, op_asl<addr_zpx>, op_nop,
+    op_bpl, op_ora<addr_iny>, op_nop, op_nop, op_nop, op_ora<addr_zpx>, op_asl<addr_zpx>, op_nop,
     op_clc, op_ora<addr_aby>, op_nop, op_nop, op_nop, op_ora<addr_abx>, op_asl<addr_abx<false>>,
     op_nop,
     // 0x20
