@@ -320,16 +320,32 @@ template <addr_func_t T> static void op_eor(Cpu &) {
   // TODO
 }
 
-template <addr_func_t T> static void op_inc(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_inc(Cpu &cpu) {
+  const auto a = T(cpu);
+  const auto v = static_cast<uint8>(cpu.read(a) + 1);
+
+  cpu.tick();
+
+  cpu.P.Z = (v == 0);
+  cpu.P.N = v.bit(7);
+
+  cpu.write(a, v);
 }
 
-static void op_inx(Cpu &) {
-  // TODO
+static void op_inx(Cpu &cpu) {
+  cpu.tick();
+  ++cpu.X;
+
+  cpu.P.Z = (cpu.X == 0);
+  cpu.P.N = cpu.X.bit(7);
 }
 
-static void op_iny(Cpu &) {
-  // TODO
+static void op_iny(Cpu &cpu) {
+  cpu.tick();
+  ++cpu.Y;
+
+  cpu.P.Z = (cpu.Y == 0);
+  cpu.P.N = cpu.Y.bit(7);
 }
 
 template <addr_func_t T> static void op_jmp(Cpu &) {
@@ -533,7 +549,8 @@ const std::array<instr_func_t, 256> instructions = {
     op_sbc<addr_abs>, op_inc<addr_abs>, op_nop,
     // 0xf0
     op_beq, op_sbc<addr_iny>, op_nop, op_nop, op_nop, op_sbc<addr_zpg>, op_inc<addr_zpx>, op_nop,
-    op_sed, op_sbc<addr_aby>, op_nop, op_nop, op_nop, op_sbc<addr_abx>, op_inc<addr_abx>, op_nop};
+    op_sed, op_sbc<addr_aby>, op_nop, op_nop, op_nop, op_sbc<addr_abx>, op_inc<addr_abx<false>>,
+    op_nop};
 
 } // namespace
 
