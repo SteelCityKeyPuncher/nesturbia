@@ -52,6 +52,17 @@ void Cpu::write16(uint16 address, uint16 value) {
   writeCallback((uint16)(address + 1), static_cast<uint8>(value >> 8));
 }
 
+uint8 Cpu::pop() { return read(0x100 + ++S); }
+
+uint8 Cpu::pop16() { return pop() | (static_cast<uint16>(pop()) << 8); }
+
+void Cpu::push(uint8 value) { write(0x100 + S--, value); }
+
+void Cpu::push16(uint16 value) {
+  push(value >> 8);
+  push(value);
+}
+
 void Cpu::tick() { ++cycles; }
 
 void Cpu::executeInstruction() {
@@ -216,14 +227,47 @@ static void op_bne(Cpu &cpu) { branch(cpu, !cpu.P.Z); }
 
 static void op_bpl(Cpu &cpu) { branch(cpu, !cpu.P.N); }
 
+static void op_brk(Cpu &cpu) {
+  ++cpu.PC;
+  cpu.push16(cpu.PC);
+  cpu.push(cpu.P | 0x10);
+  cpu.PC = cpu.read16(0xfffe);
+  cpu.P.I = true;
+  cpu.tick();
+}
+
+static void op_bvc(Cpu &cpu) { branch(cpu, !cpu.P.C); }
+
+static void op_bvs(Cpu &cpu) { branch(cpu, cpu.P.C); }
+
+static void op_clc(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.C = false;
+}
+
+static void op_cld(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.D = false;
+}
+
+static void op_cli(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.I = false;
+}
+
+static void op_clv(Cpu &cpu) {
+  cpu.tick();
+  cpu.P.V = false;
+}
+
 static void op_nop(Cpu &) {}
 
 const std::array<instr_func_t, 256> instructions = {
     // 0x00
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpg>, op_nop, op_nop, op_nop,
+    op_brk, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpg>, op_nop, op_nop, op_nop,
     op_asl<addr_acc>, op_nop, op_nop, op_nop, op_asl<addr_abs>, op_nop,
     // 0x10
-    op_bpl, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpx>, op_nop, op_nop, op_nop,
+    op_bpl, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpx>, op_nop, op_clc, op_nop,
     op_nop, op_nop, op_nop, op_nop, op_asl<addr_abx<false>>, op_nop,
     // 0x20
     op_nop, op_and<addr_inx>, op_nop, op_nop, op_bit<addr_zpg>, op_and<addr_zpg>, op_nop, op_nop,
@@ -235,13 +279,13 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0x50
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_bvc, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_cli, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0x60
     op_nop, op_adc<addr_inx>, op_nop, op_nop, op_nop, op_adc<addr_zpg>, op_nop, op_nop, op_nop,
     op_adc<addr_imm>, op_nop, op_nop, op_nop, op_adc<addr_abs>, op_nop, op_nop,
     // 0x70
-    op_nop, op_adc<addr_iny>, op_nop, op_nop, op_nop, op_adc<addr_zpx>, op_nop, op_nop, op_nop,
+    op_bvs, op_adc<addr_iny>, op_nop, op_nop, op_nop, op_adc<addr_zpx>, op_nop, op_nop, op_nop,
     op_adc<addr_aby>, op_nop, op_nop, op_nop, op_adc<addr_abx>, op_nop, op_nop,
     // 0x80
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
@@ -253,13 +297,13 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xb0
-    op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_clv, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xc0
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xd0
-    op_bne, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_bne, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_cld, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xe0
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,

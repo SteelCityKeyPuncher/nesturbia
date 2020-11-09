@@ -60,6 +60,12 @@ struct Cpu {
   void write(uint16 address, uint8 value);
   void write16(uint16 address, uint16 value);
 
+  uint8 pop();
+  uint8 pop16();
+
+  void push(uint8 value);
+  void push16(uint16 value);
+
   void tick();
   void executeInstruction();
 };
