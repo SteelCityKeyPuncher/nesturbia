@@ -22,6 +22,32 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/dec.cpp
   tests/cpu/instructions/dex.cpp
   tests/cpu/instructions/dey.cpp
+  tests/cpu/instructions/eor.cpp
+  tests/cpu/instructions/inc.cpp
+  tests/cpu/instructions/inx.cpp
+  tests/cpu/instructions/iny.cpp
+  tests/cpu/instructions/jmp.cpp
+  tests/cpu/instructions/jsr.cpp
+  tests/cpu/instructions/ldx.cpp
+  tests/cpu/instructions/ldy.cpp
+  tests/cpu/instructions/lsr.cpp
+  tests/cpu/instructions/nop.cpp
+  tests/cpu/instructions/ora.cpp
+  tests/cpu/instructions/pha.cpp
+  tests/cpu/instructions/php.cpp
+  tests/cpu/instructions/pla.cpp
+  tests/cpu/instructions/plp.cpp
+  tests/cpu/instructions/rol.cpp
+  tests/cpu/instructions/ror.cpp
+  tests/cpu/instructions/rti.cpp
+  tests/cpu/instructions/rts.cpp
+  tests/cpu/instructions/sbc.cpp
+  tests/cpu/instructions/sec.cpp
+  tests/cpu/instructions/sed.cpp
+  tests/cpu/instructions/sei.cpp
+  tests/cpu/instructions/sta.cpp
+  tests/cpu/instructions/stx.cpp
+  tests/cpu/instructions/sty.cpp
   tests/cpu/instructions/tax.cpp
   tests/cpu/instructions/tay.cpp
   tests/cpu/instructions/tsx.cpp

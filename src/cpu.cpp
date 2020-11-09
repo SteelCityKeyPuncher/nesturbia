@@ -313,7 +313,107 @@ static void op_dey(Cpu &cpu) {
   cpu.P.N = cpu.Y.bit(7);
 }
 
-static void op_nop(Cpu &) {}
+template <addr_func_t T> static void op_eor(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_inc(Cpu &) {
+  // TODO
+}
+
+static void op_inx(Cpu &) {
+  // TODO
+}
+
+static void op_iny(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_jmp(Cpu &) {
+  // TODO
+}
+
+static void op_jsr(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_ldx(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_ldy(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_lsr(Cpu &) {
+  // TODO
+}
+
+static void op_nop(Cpu &cpu) { cpu.tick(); }
+
+template <addr_func_t T> static void op_ora(Cpu &) {
+  // TODO
+}
+
+static void op_pha(Cpu &) {
+  // TODO
+}
+
+static void op_php(Cpu &) {
+  // TODO
+}
+
+static void op_pla(Cpu &) {
+  // TODO
+}
+
+static void op_plp(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_rol(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_ror(Cpu &) {
+  // TODO
+}
+
+static void op_rti(Cpu &) {
+  // TODO
+}
+
+static void op_rts(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_sbc(Cpu &) {
+  // TODO
+}
+
+static void op_sec(Cpu &) {
+  // TODO
+}
+
+static void op_sed(Cpu &) {
+  // TODO
+}
+
+static void op_sei(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_sta(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_stx(Cpu &) {
+  // TODO
+}
+
+template <addr_func_t T> static void op_sty(Cpu &) {
+  // TODO
+}
 
 static void op_tax(Cpu &cpu) {
   cpu.tick();
@@ -365,55 +465,62 @@ static void op_tya(Cpu &cpu) {
 
 const std::array<instr_func_t, 256> instructions = {
     // 0x00
-    op_brk, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpg>, op_nop, op_nop, op_nop,
-    op_asl<addr_acc>, op_nop, op_nop, op_nop, op_asl<addr_abs>, op_nop,
+    op_brk, op_ora<addr_iny>, op_nop, op_nop, op_nop, op_ora<addr_zpg>, op_asl<addr_zpg>, op_nop,
+    op_php, op_ora<addr_imm>, op_asl<addr_acc>, op_nop, op_nop, op_ora<addr_abs>, op_asl<addr_abs>,
+    op_nop,
     // 0x10
-    op_bpl, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpx>, op_nop, op_clc, op_nop,
-    op_nop, op_nop, op_nop, op_nop, op_asl<addr_abx<false>>, op_nop,
+    op_bpl, op_ora<addr_iny>, op_nop, op_nop, op_nop, op_ora<addr_zpg>, op_asl<addr_zpx>, op_nop,
+    op_clc, op_ora<addr_aby>, op_nop, op_nop, op_nop, op_ora<addr_abx>, op_asl<addr_abx<false>>,
+    op_nop,
     // 0x20
-    op_nop, op_and<addr_inx>, op_nop, op_nop, op_bit<addr_zpg>, op_and<addr_zpg>, op_nop, op_nop,
-    op_nop, op_and<addr_imm>, op_nop, op_nop, op_bit<addr_abs>, op_and<addr_abs>, op_nop, op_nop,
+    op_jsr, op_and<addr_inx>, op_nop, op_nop, op_bit<addr_zpg>, op_and<addr_zpg>, op_rol<addr_zpg>,
+    op_nop, op_plp, op_and<addr_imm>, op_rol<addr_acc>, op_nop, op_bit<addr_abs>, op_and<addr_abs>,
+    op_rol<addr_abs>, op_nop,
     // 0x30
-    op_bmi, op_and<addr_iny>, op_nop, op_nop, op_nop, op_and<addr_zpx>, op_nop, op_nop, op_nop,
-    op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_nop, op_nop,
+    op_bmi, op_and<addr_iny>, op_nop, op_nop, op_nop, op_and<addr_zpx>, op_rol<addr_zpx>, op_nop,
+    op_sec, op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_rol<addr_abx>, op_nop,
     // 0x40
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_rti, op_eor<addr_inx>, op_nop, op_nop, op_nop, op_eor<addr_zpg>, op_lsr<addr_zpg>, op_pha,
+    op_nop, op_eor<addr_imm>, op_lsr<addr_acc>, op_nop, op_jmp<addr_abs>, op_eor<addr_abs>,
+    op_lsr<addr_abs>, op_nop,
     // 0x50
-    op_bvc, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_cli, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_bvc, op_eor<addr_iny>, op_nop, op_nop, op_nop, op_eor<addr_zpx>, op_lsr<addr_zpx>, op_nop,
+    op_cli, op_eor<addr_aby>, op_nop, op_nop, op_nop, op_eor<addr_abx>, op_lsr<addr_abx>, op_nop,
     // 0x60
-    op_nop, op_adc<addr_inx>, op_nop, op_nop, op_nop, op_adc<addr_zpg>, op_nop, op_nop, op_nop,
-    op_adc<addr_imm>, op_nop, op_nop, op_nop, op_adc<addr_abs>, op_nop, op_nop,
+    op_rts, op_adc<addr_inx>, op_nop, op_nop, op_nop, op_adc<addr_zpg>, op_ror<addr_zpg>, op_nop,
+    op_pla, op_adc<addr_imm>, op_ror<addr_acc>, op_nop, op_jmp<addr_ind>, op_adc<addr_abs>,
+    op_ror<addr_abs>, op_nop,
     // 0x70
-    op_bvs, op_adc<addr_iny>, op_nop, op_nop, op_nop, op_adc<addr_zpx>, op_nop, op_nop, op_nop,
-    op_adc<addr_aby>, op_nop, op_nop, op_nop, op_adc<addr_abx>, op_nop, op_nop,
+    op_bvs, op_adc<addr_iny>, op_nop, op_nop, op_nop, op_adc<addr_zpx>, op_ror<addr_zpx>, op_nop,
+    op_sei, op_adc<addr_aby>, op_nop, op_nop, op_nop, op_adc<addr_abx>, op_ror<addr_abx>, op_nop,
     // 0x80
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_dey, op_nop, op_txa, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_sta<addr_inx>, op_nop, op_nop, op_sty<addr_zpg>, op_sta<addr_zpg>, op_stx<addr_zpg>,
+    op_nop, op_dey, op_nop, op_txa, op_nop, op_sty<addr_abs>, op_sta<addr_abs>, op_stx<addr_abs>,
+    op_nop,
     // 0x90
-    op_bcc, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_tya, op_nop, op_txs, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_bcc, op_sta<addr_iny>, op_nop, op_nop, op_sty<addr_zpx>, op_sta<addr_zpx>, op_stx<addr_zpy>,
+    op_nop, op_tya, op_sta<addr_aby>, op_txs, op_nop, op_nop, op_sta<addr_abx>, op_nop, op_nop,
     // 0xa0
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_tay, op_nop, op_tax, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_ldy<addr_imm>, op_nop, op_ldx<addr_imm>, op_nop, op_ldy<addr_zpg>, op_nop, op_ldx<addr_zpg>,
+    op_nop, op_tay, op_nop, op_tax, op_nop, op_ldy<addr_abs>, op_nop, op_ldx<addr_abs>, op_nop,
     // 0xb0
-    op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_clv, op_nop, op_tsx, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_bcs, op_nop, op_nop, op_nop, op_ldy<addr_zpx>, op_nop, op_ldx<addr_zpy>, op_nop, op_clv,
+    op_nop, op_tsx, op_nop, op_ldy<addr_abx>, op_nop, op_ldx<addr_aby>, op_nop,
     // 0xc0
     op_cpy<addr_imm>, op_cmp<addr_inx>, op_nop, op_nop, op_cpy<addr_zpg>, op_cmp<addr_zpg>,
-    op_dec<addr_zpg>, op_nop, op_nop, op_cmp<addr_imm>, op_dex, op_nop, op_cpy<addr_abs>,
+    op_dec<addr_zpg>, op_nop, op_iny, op_cmp<addr_imm>, op_dex, op_nop, op_cpy<addr_abs>,
     op_cmp<addr_abs>, op_dec<addr_abs>, op_nop,
     // 0xd0
     op_bne, op_cmp<addr_iny>, op_nop, op_nop, op_nop, op_cmp<addr_zpx>, op_dec<addr_zpx>, op_nop,
     op_cld, op_cmp<addr_aby>, op_nop, op_nop, op_nop, op_cmp<addr_abx>, op_dec<addr_abx<false>>,
     op_nop,
     // 0xe0
-    op_cpx<addr_imm>, op_nop, op_nop, op_nop, op_cpx<addr_zpg>, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_cpx<addr_abs>, op_nop, op_nop, op_nop,
+    op_cpx<addr_imm>, op_sbc<addr_inx>, op_nop, op_nop, op_cpx<addr_zpg>, op_sbc<addr_zpg>,
+    op_inc<addr_zpg>, op_nop, op_inx, op_sbc<addr_imm>, op_nop, op_nop, op_cpx<addr_abs>,
+    op_sbc<addr_abs>, op_inc<addr_abs>, op_nop,
     // 0xf0
-    op_beq, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop};
+    op_beq, op_sbc<addr_iny>, op_nop, op_nop, op_nop, op_sbc<addr_zpg>, op_inc<addr_zpx>, op_nop,
+    op_sed, op_sbc<addr_aby>, op_nop, op_nop, op_nop, op_sbc<addr_abx>, op_inc<addr_abx>, op_nop};
 
 } // namespace
 
