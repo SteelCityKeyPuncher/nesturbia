@@ -409,8 +409,11 @@ static void op_rti(Cpu &cpu) {
   cpu.PC = cpu.pop16();
 }
 
-static void op_rts(Cpu &) {
-  // TODO
+static void op_rts(Cpu &cpu) {
+  cpu.tick();
+  cpu.tick();
+  cpu.tick();
+  cpu.PC = cpu.pop16() + 1;
 }
 
 template <addr_func_t T> static void op_sbc(Cpu &) {
