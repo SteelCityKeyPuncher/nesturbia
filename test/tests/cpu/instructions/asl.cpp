@@ -102,6 +102,7 @@ TEST_CASE("Cpu_Instructions_ASL_abs", "[cpu]") {
   cpu.executeInstruction();
 
   CHECK(memory.at(0xbeef) == 0x5c);
+  CHECK(cpu.P.C == false);
   CHECK(cpu.P.Z == false);
   CHECK(cpu.P.N == false);
   CHECK(cpu.cycles == 7 + 6);
@@ -128,6 +129,7 @@ TEST_CASE("Cpu_Instructions_ASL_zpx", "[cpu]") {
   cpu.executeInstruction();
 
   CHECK(memory.at(0xae) == 0x5c);
+  CHECK(cpu.P.C == false);
   CHECK(cpu.P.Z == false);
   CHECK(cpu.P.N == false);
   CHECK(cpu.cycles == 7 + 6);
@@ -155,6 +157,7 @@ TEST_CASE("Cpu_Instructions_ASL_abx", "[cpu]") {
   cpu.executeInstruction();
 
   CHECK(memory.at(0xbef2) == 0x5c);
+  CHECK(cpu.P.C == false);
   CHECK(cpu.P.Z == false);
   CHECK(cpu.P.N == false);
   CHECK(cpu.cycles == 7 + 7);

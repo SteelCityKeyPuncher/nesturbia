@@ -361,8 +361,29 @@ template <addr_func_t T> static void op_ldy(Cpu &) {
   // TODO
 }
 
-template <addr_func_t T> static void op_lsr(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_lsr(Cpu &cpu) {
+  cpu.tick();
+
+  if (T == addr_acc) {
+    const auto v = cpu.A;
+    const auto r = static_cast<uint8>(v >> 1);
+
+    cpu.P.C = v.bit(0);
+    cpu.P.Z = r == 0;
+    cpu.P.N = false;
+
+    cpu.A = r;
+  } else {
+    const auto address = T(cpu);
+    const auto v = cpu.read(address);
+    const auto r = static_cast<uint8>(v >> 1);
+
+    cpu.P.C = v.bit(0);
+    cpu.P.Z = r == 0;
+    cpu.P.N = false;
+
+    cpu.write(address, r);
+  }
 }
 
 static void op_nop(Cpu &cpu) { cpu.tick(); }
@@ -520,7 +541,8 @@ const std::array<instr_func_t, 256> instructions = {
     op_lsr<addr_abs>, op_nop,
     // 0x50
     op_bvc, op_eor<addr_iny>, op_nop, op_nop, op_nop, op_eor<addr_zpx>, op_lsr<addr_zpx>, op_nop,
-    op_cli, op_eor<addr_aby>, op_nop, op_nop, op_nop, op_eor<addr_abx>, op_lsr<addr_abx>, op_nop,
+    op_cli, op_eor<addr_aby>, op_nop, op_nop, op_nop, op_eor<addr_abx>, op_lsr<addr_abx<false>>,
+    op_nop,
     // 0x60
     op_rts, op_adc<addr_inx>, op_nop, op_nop, op_nop, op_adc<addr_zpg>, op_ror<addr_zpg>, op_nop,
     op_pla, op_adc<addr_imm>, op_ror<addr_acc>, op_nop, op_jmp<addr_ind>, op_adc<addr_abs>,
