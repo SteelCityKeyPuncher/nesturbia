@@ -352,7 +352,7 @@ template <addr_func_t T> static void op_jmp(Cpu &cpu) { cpu.PC = T(cpu); }
 
 static void op_jsr(Cpu &cpu) {
   cpu.tick();
-  cpu.push16(cpu.PC + 2);
+  cpu.push16(cpu.PC + 1);
   cpu.PC = addr_abs(cpu);
 }
 

@@ -26,7 +26,7 @@ TEST_CASE("Cpu_Instructions_JSR", "[cpu]") {
 
   CHECK(cpu.S == 0xfb);
   CHECK(memory.at(0x1fd) == 0x00);
-  CHECK(memory.at(0x1fc) == 0x03);
+  CHECK(memory.at(0x1fc) == 0x02);
   CHECK(cpu.PC == 0xbeef);
   CHECK(cpu.cycles == 7 + 6);
 }
