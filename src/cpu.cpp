@@ -40,6 +40,8 @@ uint16 Cpu::read16(uint16 address) {
 }
 
 void Cpu::write(uint16 address, uint8 value) {
+  tick();
+
   if (writeCallback) {
     writeCallback(address, value);
   }
@@ -69,11 +71,15 @@ using addr_func_t = uint16 (*)(Cpu &);
 
 inline uint16 addr_abs(Cpu &cpu) { return cpu.read16((cpu.PC += 2) - 2); }
 
-inline uint16 addr_abx(Cpu &cpu) {
+template <bool CheckPageCross = true> inline uint16 addr_abx(Cpu &cpu) {
   const auto v = addr_abs(cpu);
   const auto xSigned = static_cast<int8_t>(cpu.X);
 
-  if (checkPageCross(v, xSigned)) {
+  if constexpr (CheckPageCross) {
+    if (checkPageCross(v, xSigned)) {
+      cpu.tick();
+    }
+  } else {
     cpu.tick();
   }
 
@@ -156,15 +162,39 @@ template <addr_func_t T> static void op_and(Cpu &cpu) {
   cpu.P.N = cpu.A.bit(7);
 }
 
+template <addr_func_t T> static void op_asl(Cpu &cpu) {
+  cpu.tick();
+
+  if (T == addr_acc) {
+    const auto r = static_cast<uint8>(cpu.A << 1);
+
+    cpu.P.C = cpu.A.bit(7);
+    cpu.P.Z = r == 0;
+    cpu.P.N = r.bit(7);
+
+    cpu.A = r;
+  } else {
+    const auto address = T(cpu);
+    const auto v = cpu.read(address);
+    const auto r = static_cast<uint8>(v << 1);
+
+    cpu.P.C = v.bit(7);
+    cpu.P.Z = r == 0;
+    cpu.P.N = r.bit(7);
+
+    cpu.write(address, r);
+  }
+}
+
 static void op_nop(Cpu &) {}
 
 const std::array<instr_func_t, 256> instructions = {
     // 0x00
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpg>, op_nop, op_nop, op_nop,
+    op_asl<addr_acc>, op_nop, op_nop, op_nop, op_asl<addr_abs>, op_nop,
     // 0x10
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_asl<addr_zpx>, op_nop, op_nop, op_nop,
+    op_nop, op_nop, op_nop, op_nop, op_asl<addr_abx<false>>, op_nop,
     // 0x20
     op_nop, op_and<addr_inx>, op_nop, op_nop, op_nop, op_and<addr_zpg>, op_nop, op_nop, op_nop,
     op_and<addr_imm>, op_nop, op_nop, op_nop, op_and<addr_abs>, op_nop, op_nop,
