@@ -517,17 +517,11 @@ static void op_sei(Cpu &cpu) {
   cpu.P.I = true;
 }
 
-template <addr_func_t T> static void op_sta(Cpu &) {
-  // TODO
-}
+template <addr_func_t T> static void op_sta(Cpu &cpu) { cpu.write(T(cpu), cpu.A); }
 
-template <addr_func_t T> static void op_stx(Cpu &) {
-  // TODO
-}
+template <addr_func_t T> static void op_stx(Cpu &cpu) { cpu.write(T(cpu), cpu.X); }
 
-template <addr_func_t T> static void op_sty(Cpu &) {
-  // TODO
-}
+template <addr_func_t T> static void op_sty(Cpu &cpu) { cpu.write(T(cpu), cpu.Y); }
 
 static void op_tax(Cpu &cpu) {
   cpu.tick();
