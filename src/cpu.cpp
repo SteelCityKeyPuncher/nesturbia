@@ -124,8 +124,6 @@ inline uint16 addr_acc(Cpu &) { return 0; }
 
 inline uint16 addr_imm(Cpu &cpu) { return cpu.PC++; }
 
-inline uint16 addr_imp(Cpu &) { return 0; }
-
 inline uint16 addr_ind(Cpu &) { return 0; }
 
 inline uint16 addr_inx(Cpu &cpu) {
@@ -269,6 +267,24 @@ template <addr_func_t T> static void op_cmp(Cpu &cpu) {
   cpu.P.N = r.bit(7);
 }
 
+template <addr_func_t T> static void op_cpx(Cpu &cpu) {
+  const auto v = cpu.read(T(cpu));
+  const auto r = static_cast<uint8>(cpu.X - v);
+
+  cpu.P.C = r >= v;
+  cpu.P.Z = (r == 0);
+  cpu.P.N = r.bit(7);
+}
+
+template <addr_func_t T> static void op_cpy(Cpu &cpu) {
+  const auto v = cpu.read(T(cpu));
+  const auto r = static_cast<uint8>(cpu.Y - v);
+
+  cpu.P.C = r >= v;
+  cpu.P.Z = (r == 0);
+  cpu.P.N = r.bit(7);
+}
+
 static void op_nop(Cpu &) {}
 
 const std::array<instr_func_t, 256> instructions = {
@@ -309,14 +325,15 @@ const std::array<instr_func_t, 256> instructions = {
     op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_clv, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xc0
-    op_nop, op_cmp<addr_inx>, op_nop, op_nop, op_nop, op_cmp<addr_zpg>, op_nop, op_nop, op_nop,
-    op_cmp<addr_imm>, op_nop, op_nop, op_nop, op_cmp<addr_abs>, op_nop, op_nop,
+    op_cpy<addr_imm>, op_cmp<addr_inx>, op_nop, op_nop, op_cpy<addr_zpg>, op_cmp<addr_zpg>, op_nop,
+    op_nop, op_nop, op_cmp<addr_imm>, op_nop, op_nop, op_cpy<addr_abs>, op_cmp<addr_abs>, op_nop,
+    op_nop,
     // 0xd0
     op_bne, op_cmp<addr_iny>, op_nop, op_nop, op_nop, op_cmp<addr_zpx>, op_nop, op_nop, op_cld,
     op_cmp<addr_aby>, op_nop, op_nop, op_nop, op_cmp<addr_abx>, op_nop, op_nop,
     // 0xe0
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
-    op_nop, op_nop, op_nop, op_nop,
+    op_cpx<addr_imm>, op_nop, op_nop, op_nop, op_cpx<addr_zpg>, op_nop, op_nop, op_nop, op_nop,
+    op_nop, op_nop, op_nop, op_cpx<addr_abs>, op_nop, op_nop, op_nop,
     // 0xf0
     op_beq, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop};
