@@ -61,7 +61,7 @@ struct Cpu {
   void write16(uint16 address, uint16 value);
 
   uint8 pop();
-  uint8 pop16();
+  uint16 pop16();
 
   void push(uint8 value);
   void push16(uint16 value);

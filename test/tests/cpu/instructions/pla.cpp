@@ -19,7 +19,10 @@ TEST_CASE("Cpu_Instructions_PLA", "[cpu]") {
   cpu.Power();
 
   CHECK(cpu.S == 0xfd);
-  cpu.push(0xff);
+
+  // Fake push (so that cpu.cycles is not modified)
+  memory[0x1fd] = 0xff;
+  cpu.S = 0xfc;
 
   cpu.executeInstruction();
 

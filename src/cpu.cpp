@@ -54,7 +54,7 @@ void Cpu::write16(uint16 address, uint16 value) {
 
 uint8 Cpu::pop() { return read(0x100 + ++S); }
 
-uint8 Cpu::pop16() { return pop() | (static_cast<uint16>(pop()) << 8); }
+uint16 Cpu::pop16() { return pop() | (static_cast<uint16>(pop()) << 8); }
 
 void Cpu::push(uint8 value) { write(0x100 + S--, value); }
 
@@ -383,6 +383,7 @@ static void op_php(Cpu &cpu) {
 
 static void op_pla(Cpu &cpu) {
   cpu.tick();
+  cpu.tick();
   cpu.A = cpu.pop();
 
   cpu.P.Z = (cpu.A == 0);
@@ -390,6 +391,7 @@ static void op_pla(Cpu &cpu) {
 }
 
 static void op_plp(Cpu &cpu) {
+  cpu.tick();
   cpu.tick();
   cpu.P = cpu.pop();
 }
@@ -402,8 +404,9 @@ template <addr_func_t T> static void op_ror(Cpu &) {
   // TODO
 }
 
-static void op_rti(Cpu &) {
-  // TODO
+static void op_rti(Cpu &cpu) {
+  op_plp(cpu);
+  cpu.PC = cpu.pop16();
 }
 
 static void op_rts(Cpu &) {
