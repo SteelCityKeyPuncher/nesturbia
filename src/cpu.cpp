@@ -498,8 +498,17 @@ static void op_rts(Cpu &cpu) {
   cpu.PC = cpu.pop16() + 1;
 }
 
-template <addr_func_t T> static void op_sbc(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_sbc(Cpu &cpu) {
+  const auto v = static_cast<uint8>(cpu.read(T(cpu)) ^ 0xff);
+  const uint16 r16 = cpu.A + v + cpu.P.C;
+  const auto r = static_cast<uint8>(r16);
+
+  cpu.P.C = r16.bit(8);
+  cpu.P.Z = r == 0;
+  cpu.P.V = (~(cpu.A ^ v) & (cpu.A ^ r) & 0x80) != 0;
+  cpu.P.N = r.bit(7);
+
+  cpu.A = r;
 }
 
 static void op_sec(Cpu &cpu) {
@@ -632,7 +641,7 @@ const std::array<instr_func_t, 256> instructions = {
     op_inc<addr_zpg>, op_nop, op_inx, op_sbc<addr_imm>, op_nop, op_nop, op_cpx<addr_abs>,
     op_sbc<addr_abs>, op_inc<addr_abs>, op_nop,
     // 0xf0
-    op_beq, op_sbc<addr_iny>, op_nop, op_nop, op_nop, op_sbc<addr_zpg>, op_inc<addr_zpx>, op_nop,
+    op_beq, op_sbc<addr_iny>, op_nop, op_nop, op_nop, op_sbc<addr_zpx>, op_inc<addr_zpx>, op_nop,
     op_sed, op_sbc<addr_aby>, op_nop, op_nop, op_nop, op_sbc<addr_abx>, op_inc<addr_abx<false>>,
     op_nop};
 
