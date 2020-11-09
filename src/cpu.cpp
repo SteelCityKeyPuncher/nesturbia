@@ -358,20 +358,27 @@ template <addr_func_t T> static void op_ora(Cpu &) {
   // TODO
 }
 
-static void op_pha(Cpu &) {
-  // TODO
+static void op_pha(Cpu &cpu) {
+  cpu.tick();
+  cpu.push(cpu.A);
 }
 
-static void op_php(Cpu &) {
-  // TODO
+static void op_php(Cpu &cpu) {
+  cpu.tick();
+  cpu.push(cpu.P | 0x30);
 }
 
-static void op_pla(Cpu &) {
-  // TODO
+static void op_pla(Cpu &cpu) {
+  cpu.tick();
+  cpu.A = cpu.pop();
+
+  cpu.P.Z = (cpu.A == 0);
+  cpu.P.N = cpu.A.bit(7);
 }
 
-static void op_plp(Cpu &) {
-  // TODO
+static void op_plp(Cpu &cpu) {
+  cpu.tick();
+  cpu.P = cpu.pop();
 }
 
 template <addr_func_t T> static void op_rol(Cpu &) {
@@ -486,8 +493,8 @@ const std::array<instr_func_t, 256> instructions = {
     op_bmi, op_and<addr_iny>, op_nop, op_nop, op_nop, op_and<addr_zpx>, op_rol<addr_zpx>, op_nop,
     op_sec, op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_rol<addr_abx>, op_nop,
     // 0x40
-    op_rti, op_eor<addr_inx>, op_nop, op_nop, op_nop, op_eor<addr_zpg>, op_lsr<addr_zpg>, op_pha,
-    op_nop, op_eor<addr_imm>, op_lsr<addr_acc>, op_nop, op_jmp<addr_abs>, op_eor<addr_abs>,
+    op_rti, op_eor<addr_inx>, op_nop, op_nop, op_nop, op_eor<addr_zpg>, op_lsr<addr_zpg>, op_nop,
+    op_pha, op_eor<addr_imm>, op_lsr<addr_acc>, op_nop, op_jmp<addr_abs>, op_eor<addr_abs>,
     op_lsr<addr_abs>, op_nop,
     // 0x50
     op_bvc, op_eor<addr_iny>, op_nop, op_nop, op_nop, op_eor<addr_zpx>, op_lsr<addr_zpx>, op_nop,
