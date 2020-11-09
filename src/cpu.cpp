@@ -420,12 +420,54 @@ static void op_plp(Cpu &cpu) {
   cpu.P = cpu.pop();
 }
 
-template <addr_func_t T> static void op_rol(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_rol(Cpu &cpu) {
+  cpu.tick();
+
+  if (T == addr_acc) {
+    const auto v = cpu.A;
+    const auto r = static_cast<uint8>((v << 1) | cpu.P.C);
+
+    cpu.P.C = v.bit(7);
+    cpu.P.Z = r == 0;
+    cpu.P.N = r.bit(7);
+
+    cpu.A = r;
+  } else {
+    const auto address = T(cpu);
+    const auto v = cpu.read(address);
+    const auto r = static_cast<uint8>((v << 1) | cpu.P.C);
+
+    cpu.P.C = v.bit(7);
+    cpu.P.Z = r == 0;
+    cpu.P.N = r.bit(7);
+
+    cpu.write(address, r);
+  }
 }
 
-template <addr_func_t T> static void op_ror(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_ror(Cpu &cpu) {
+  cpu.tick();
+
+  if (T == addr_acc) {
+    const auto v = cpu.A;
+    const auto r = static_cast<uint8>((cpu.P.C << 7) | (v >> 1));
+
+    cpu.P.C = v.bit(0);
+    cpu.P.Z = r == 0;
+    cpu.P.N = r.bit(7);
+
+    cpu.A = r;
+  } else {
+    const auto address = T(cpu);
+    const auto v = cpu.read(address);
+    const auto r = static_cast<uint8>((cpu.P.C << 7) | (v >> 1));
+
+    cpu.P.C = v.bit(0);
+    cpu.P.Z = r == 0;
+    cpu.P.N = r.bit(7);
+
+    cpu.write(address, r);
+  }
 }
 
 static void op_rti(Cpu &cpu) {
@@ -534,7 +576,8 @@ const std::array<instr_func_t, 256> instructions = {
     op_rol<addr_abs>, op_nop,
     // 0x30
     op_bmi, op_and<addr_iny>, op_nop, op_nop, op_nop, op_and<addr_zpx>, op_rol<addr_zpx>, op_nop,
-    op_sec, op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_rol<addr_abx>, op_nop,
+    op_sec, op_and<addr_aby>, op_nop, op_nop, op_nop, op_and<addr_abx>, op_rol<addr_abx<false>>,
+    op_nop,
     // 0x40
     op_rti, op_eor<addr_inx>, op_nop, op_nop, op_nop, op_eor<addr_zpg>, op_lsr<addr_zpg>, op_nop,
     op_pha, op_eor<addr_imm>, op_lsr<addr_acc>, op_nop, op_jmp<addr_abs>, op_eor<addr_abs>,
@@ -549,7 +592,8 @@ const std::array<instr_func_t, 256> instructions = {
     op_ror<addr_abs>, op_nop,
     // 0x70
     op_bvs, op_adc<addr_iny>, op_nop, op_nop, op_nop, op_adc<addr_zpx>, op_ror<addr_zpx>, op_nop,
-    op_sei, op_adc<addr_aby>, op_nop, op_nop, op_nop, op_adc<addr_abx>, op_ror<addr_abx>, op_nop,
+    op_sei, op_adc<addr_aby>, op_nop, op_nop, op_nop, op_adc<addr_abx>, op_ror<addr_abx<false>>,
+    op_nop,
     // 0x80
     op_nop, op_sta<addr_inx>, op_nop, op_nop, op_sty<addr_zpg>, op_sta<addr_zpg>, op_stx<addr_zpg>,
     op_nop, op_dey, op_nop, op_txa, op_nop, op_sty<addr_abs>, op_sta<addr_abs>, op_stx<addr_abs>,
