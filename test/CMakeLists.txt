@@ -3,6 +3,8 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/and.cpp
   tests/cpu/instructions/asl.cpp
   tests/cpu/instructions/bcc.cpp
+  tests/cpu/instructions/bcs.cpp
+  tests/cpu/instructions/beq.cpp
   tests/cpu/memory.cpp
   tests/cpu/power.cpp
 )

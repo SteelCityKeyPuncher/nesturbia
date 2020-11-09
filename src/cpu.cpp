@@ -61,9 +61,21 @@ void Cpu::executeInstruction() {
 
 namespace {
 
-// Helper function
+// Helper functions
 inline bool checkPageCross(uint16 value, int8_t offset) {
   return (((value + offset) & 0xff00) != (value & 0xff00));
+}
+
+inline void branch(Cpu &cpu, bool takeBranch) {
+  const auto offset = static_cast<int8_t>(cpu.read(cpu.PC++));
+  if (takeBranch) {
+    if (checkPageCross(cpu.PC, offset)) {
+      cpu.tick();
+    }
+
+    cpu.tick();
+    cpu.PC += offset;
+  }
 }
 
 // Addressing modes
@@ -184,17 +196,11 @@ template <addr_func_t T> static void op_asl(Cpu &cpu) {
   }
 }
 
-static void op_bcc(Cpu &cpu) {
-  const auto offset = static_cast<int8_t>(cpu.read(cpu.PC++));
-  if (!cpu.P.C) {
-    if (checkPageCross(cpu.PC, offset)) {
-      cpu.tick();
-    }
+static void op_bcc(Cpu &cpu) { branch(cpu, !cpu.P.C); }
 
-    cpu.tick();
-    cpu.PC += offset;
-  }
-}
+static void op_bcs(Cpu &cpu) { branch(cpu, cpu.P.C); }
+
+static void op_beq(Cpu &cpu) { branch(cpu, cpu.P.Z); }
 
 static void op_nop(Cpu &) {}
 
@@ -233,7 +239,7 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xb0
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_bcs, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xc0
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
@@ -245,7 +251,7 @@ const std::array<instr_func_t, 256> instructions = {
     op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop,
     // 0xf0
-    op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
+    op_beq, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop, op_nop,
     op_nop, op_nop, op_nop, op_nop};
 
 } // namespace
