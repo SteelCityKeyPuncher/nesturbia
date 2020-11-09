@@ -124,10 +124,7 @@ inline uint16 addr_acc(Cpu &) { return 0; }
 
 inline uint16 addr_imm(Cpu &cpu) { return cpu.PC++; }
 
-inline uint16 addr_ind(Cpu &) {
-  // TODO
-  return 0;
-}
+inline uint16 addr_ind(Cpu &cpu) { return cpu.read16(addr_abs(cpu)); }
 
 inline uint16 addr_inx(Cpu &cpu) {
   const auto l = static_cast<uint8>(cpu.read(cpu.PC++) + cpu.X);
@@ -348,9 +345,7 @@ static void op_iny(Cpu &cpu) {
   cpu.P.N = cpu.Y.bit(7);
 }
 
-template <addr_func_t T> static void op_jmp(Cpu &) {
-  // TODO
-}
+template <addr_func_t T> static void op_jmp(Cpu &cpu) { cpu.PC = T(cpu); }
 
 static void op_jsr(Cpu &) {
   // TODO
