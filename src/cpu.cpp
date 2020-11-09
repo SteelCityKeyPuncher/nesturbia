@@ -356,12 +356,18 @@ static void op_jsr(Cpu &cpu) {
   cpu.PC = addr_abs(cpu);
 }
 
-template <addr_func_t T> static void op_ldx(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_ldx(Cpu &cpu) {
+  cpu.X = cpu.read(T(cpu));
+
+  cpu.P.Z = (cpu.X == 0);
+  cpu.P.N = cpu.X.bit(7);
 }
 
-template <addr_func_t T> static void op_ldy(Cpu &) {
-  // TODO
+template <addr_func_t T> static void op_ldy(Cpu &cpu) {
+  cpu.Y = cpu.read(T(cpu));
+
+  cpu.P.Z = (cpu.Y == 0);
+  cpu.P.N = cpu.Y.bit(7);
 }
 
 template <addr_func_t T> static void op_lsr(Cpu &cpu) {
