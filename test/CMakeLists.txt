@@ -20,6 +20,8 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/cpx.cpp
   tests/cpu/instructions/cpy.cpp
   tests/cpu/instructions/dec.cpp
+  tests/cpu/instructions/dex.cpp
+  tests/cpu/instructions/dey.cpp
   tests/cpu/memory.cpp
   tests/cpu/power.cpp
 )
