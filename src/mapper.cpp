@@ -24,17 +24,26 @@ Mapper::ptr_t Mapper::Create(const void *romData, size_t romDataSize) {
 
   // TODO improve iNES header processing
 
-  size_t currentOffset = 16;
+  // Get the size of the PRG-ROM and CHR-ROM sections in bytes
+  const auto prgRomSize = prgRom16KUnits * 0x4000;
+  const auto chrRomSize = chrRom8KUnits * 0x2000;
+
+  // Calculate the expected size of the ROM file (including header)
+  const size_t expectedRomSize = 16 + prgRomSize + chrRomSize;
+  if (romDataSize != expectedRomSize) {
+    // The ROM file has an unexpected length
+    return nullptr;
+  }
 
   std::vector<uint8> prgRom;
-  if (const auto prgRomSize = prgRom16KUnits * 0x4000) {
-    prgRom.assign(rom.begin() + currentOffset, rom.begin() + currentOffset + prgRomSize);
-    currentOffset += prgRomSize;
+  if (prgRomSize != 0) {
+    prgRom.assign(rom.begin() + 16, rom.begin() + 16 + prgRomSize);
   }
 
   std::vector<uint8> chrRom;
-  if (const auto chrRomSize = chrRom8KUnits * 0x2000) {
-    chrRom.assign(rom.begin() + currentOffset, rom.begin() + currentOffset + chrRomSize);
+  if (chrRomSize != 0) {
+    const auto startOffset = 16 + prgRom.size();
+    chrRom.assign(rom.begin() + startOffset, rom.begin() + startOffset + chrRomSize);
   }
 
   switch (mapperNumber) {

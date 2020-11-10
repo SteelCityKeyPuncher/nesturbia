@@ -4,9 +4,18 @@ namespace nesturbia {
 
 Mapper::ptr_t Mapper0::Create(const std::vector<uint8> &prgRom, const std::vector<uint8> &chrRom,
                               mirror_t mirrorType) {
+  // Validate PRG-ROM size
+  if (prgRom.size() != 0x4000 && prgRom.size() != 0x8000) {
+    return nullptr;
+  }
+
+  // Validate CHR-ROM size
+  if (chrRom.size() != 0x2000) {
+    return nullptr;
+  }
+
   auto mapper = std::make_unique<Mapper0>();
 
-  // TODO validate sizes (16K/32K PRG, 8K CHR)
   mapper->prgRom = prgRom;
   mapper->chrRom = chrRom;
   mapper->mirrorType = mirrorType;
