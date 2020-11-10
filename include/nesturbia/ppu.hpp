@@ -6,7 +6,33 @@
 namespace nesturbia {
 
 struct Ppu {
+  // Types
+  union addr_t {
+    struct {
+      unsigned coarseX : 5;
+      unsigned coarseY : 5;
+      unsigned nametable : 2;
+      unsigned fineY : 3;
+    } fields;
+
+    unsigned val : 15;
+    unsigned addr : 14;
+  };
+
   // Data
+  // Registers
+  uint8 ctrl = 0;
+  uint8 mask = 0;
+  uint8 status = 0;
+  uint8 oamaddr = 0;
+  uint8 oamdata = 0;
+
+  bool writeLatch = false;
+  uint8 latchedValue = 0;
+
+  // TODO initialize?
+  addr_t vramAddr;
+  addr_t vramAddrTemp;
 
   // Public functions
   uint8 Read(uint16 address);
