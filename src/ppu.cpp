@@ -4,6 +4,18 @@
 
 namespace nesturbia {
 
+void Ppu::Tick() {
+  // TODO
+
+  if (++x == 341) {
+    x = 0;
+    if (++y == 262) {
+      y = 0;
+      isOddFrame = !isOddFrame;
+    }
+  }
+}
+
 uint8 Ppu::Read(uint16 address) {
   assert(address >= 0x2000 && address < 0x4000);
 

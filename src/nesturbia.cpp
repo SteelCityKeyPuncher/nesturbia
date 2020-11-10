@@ -46,7 +46,9 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
 
 void Nesturbia::cpuTickCallback() {
   // Each CPU tick should result in 3 PPU ticks
-  // TODO
+  ppu.Tick();
+  ppu.Tick();
+  ppu.Tick();
 }
 
 } // namespace nesturbia

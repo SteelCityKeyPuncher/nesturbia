@@ -27,6 +27,10 @@ struct Ppu {
   uint8 oamaddr = 0;
   uint8 oamdata = 0;
 
+  uint16_t x = 0;
+  uint16_t y = 0;
+  bool isOddFrame = false;
+
   bool writeLatch = false;
   uint8 latchedValue = 0;
 
@@ -35,6 +39,7 @@ struct Ppu {
   addr_t vramAddrTemp;
 
   // Public functions
+  void Tick();
   uint8 Read(uint16 address);
   void Write(uint16 address, uint8 value);
 
