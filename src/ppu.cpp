@@ -2,8 +2,8 @@
 
 namespace nesturbia {
 
-uint8 Ppu::read(uint16) { return 0; }
+uint8 Ppu::Read(uint16) { return 0; }
 
-void Ppu::write(uint16, uint8) {}
+void Ppu::Write(uint16, uint8) {}
 
 } // namespace nesturbia

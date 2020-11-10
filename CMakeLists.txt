@@ -20,6 +20,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(${PROJECT_NAME}
   src/apu.cpp
   src/cpu.cpp
+  src/mapper.cpp
+  src/mappers/mapper0.cpp
   src/nesturbia.cpp
   src/ppu.cpp
 )

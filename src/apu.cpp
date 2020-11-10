@@ -2,8 +2,8 @@
 
 namespace nesturbia {
 
-uint8 Apu::read(uint16) { return 0; }
+uint8 Apu::Read(uint16) { return 0; }
 
-void Apu::write(uint16, uint8) {}
+void Apu::Write(uint16, uint8) {}
 
 } // namespace nesturbia
