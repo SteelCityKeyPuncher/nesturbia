@@ -7,18 +7,12 @@ Nesturbia::Nesturbia()
           [this](uint16 address, uint8 value) { cpuWriteCallback(address, value); },
           [this] { cpuTickCallback(); }) {}
 
-bool Nesturbia::LoadRom(const std::string &romPath) {
-  mapper = Mapper::Create(romPath);
+bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
+  mapper = Mapper::Create(romData, romDataSize);
+
+  cpu.Power();
 
   return mapper != nullptr;
-}
-
-void Nesturbia::Run() {
-  cpu.Power();
-  cpu.executeInstruction();
-  cpu.executeInstruction();
-  cpu.executeInstruction();
-  cpu.executeInstruction();
 }
 
 uint8 Nesturbia::cpuReadCallback(uint16 address) {

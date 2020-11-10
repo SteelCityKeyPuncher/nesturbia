@@ -18,7 +18,7 @@ TEST_CASE("Cpu_Instructions_BVS", "[cpu]") {
 
   cpu.Power();
 
-  cpu.P.C = false;
+  cpu.P.V = false;
 
   cpu.executeInstruction();
 
@@ -31,7 +31,7 @@ TEST_CASE("Cpu_Instructions_BVS", "[cpu]") {
 
   cpu.Power();
 
-  cpu.P.C = true;
+  cpu.P.V = true;
 
   cpu.executeInstruction();
 
@@ -44,7 +44,7 @@ TEST_CASE("Cpu_Instructions_BVS", "[cpu]") {
 
   cpu.Power();
 
-  cpu.P.C = true;
+  cpu.P.V = true;
 
   cpu.executeInstruction();
 

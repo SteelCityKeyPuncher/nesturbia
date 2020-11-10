@@ -294,31 +294,6 @@ TEST_CASE("Cpu_Instructions_SBC_iny", "[cpu]") {
   CHECK(cpu.P.V == false);
   CHECK(cpu.P.N == false);
   CHECK(cpu.cycles == 7 + 6);
-
-  // SBC: A(0x50) - [0x0000 + Y(0xf8 = -8)](0xf0) - !C(1) = 0x60
-  // Tests page crossing (extra cycle)
-  memory[0x00] = 0xf1;
-  memory[0x01] = 0xab;
-
-  memory[0xab] = 0x00;
-  memory[0xac] = 0x00;
-
-  memory[0xfff8] = 0xf0;
-
-  cpu.Power();
-
-  cpu.A = 0x50;
-  cpu.P.C = true;
-  cpu.Y = 0xf8;
-
-  cpu.executeInstruction();
-
-  CHECK(cpu.A == 0x60);
-  CHECK(cpu.P.C == false);
-  CHECK(cpu.P.Z == false);
-  CHECK(cpu.P.V == false);
-  CHECK(cpu.P.N == false);
-  CHECK(cpu.cycles == 7 + 6);
 }
 
 TEST_CASE("Cpu_Instructions_SBC_zpx", "[cpu]") {

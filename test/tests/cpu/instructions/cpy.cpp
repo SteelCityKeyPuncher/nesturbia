@@ -23,7 +23,7 @@ TEST_CASE("Cpu_Instructions_CPY_imm", "[cpu]") {
 
   cpu.executeInstruction();
 
-  CHECK(cpu.P.C == false);
+  CHECK(cpu.P.C == true);
   CHECK(cpu.P.N == false);
   CHECK(cpu.P.Z == false);
   CHECK(cpu.cycles == 7 + 2);
@@ -49,7 +49,7 @@ TEST_CASE("Cpu_Instructions_CPY_zpg", "[cpu]") {
 
   cpu.executeInstruction();
 
-  CHECK(cpu.P.C == false);
+  CHECK(cpu.P.C == true);
   CHECK(cpu.P.N == false);
   CHECK(cpu.P.Z == true);
   CHECK(cpu.cycles == 7 + 3);
@@ -76,7 +76,7 @@ TEST_CASE("Cpu_Instructions_CPY_abs", "[cpu]") {
 
   cpu.executeInstruction();
 
-  CHECK(cpu.P.C == true);
+  CHECK(cpu.P.C == false);
   CHECK(cpu.P.N == true);
   CHECK(cpu.P.Z == false);
   CHECK(cpu.cycles == 7 + 4);

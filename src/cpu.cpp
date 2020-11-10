@@ -102,35 +102,38 @@ inline uint16 addr_abs(Cpu &cpu) { return cpu.read16((cpu.PC += 2) - 2); }
 
 template <bool CheckPageCross = true> inline uint16 addr_abx(Cpu &cpu) {
   const auto v = addr_abs(cpu);
-  const auto xSigned = static_cast<int8_t>(cpu.X);
 
   if constexpr (CheckPageCross) {
-    if (checkPageCross(v, xSigned)) {
+    if (checkPageCross(v, cpu.X)) {
       cpu.tick();
     }
   } else {
     cpu.tick();
   }
 
-  return v + xSigned;
+  return v + cpu.X;
 }
 
 inline uint16 addr_aby(Cpu &cpu) {
   const auto v = addr_abs(cpu);
-  const auto ySigned = static_cast<int8_t>(cpu.Y);
 
-  if (checkPageCross(v, ySigned)) {
+  if (checkPageCross(v, cpu.Y)) {
     cpu.tick();
   }
 
-  return v + ySigned;
+  return v + cpu.Y;
 }
 
 inline uint16 addr_acc(Cpu &) { return 0; }
 
 inline uint16 addr_imm(Cpu &cpu) { return cpu.PC++; }
 
-inline uint16 addr_ind(Cpu &cpu) { return cpu.read16(addr_abs(cpu)); }
+inline uint16 addr_ind(Cpu &cpu) {
+  const auto a = addr_abs(cpu);
+  const auto l = cpu.read(a);
+  const auto h = cpu.read((a & 0xff00) | ((a + 1) & 0x00ff));
+  return l | (h << 8);
+}
 
 inline uint16 addr_inx(Cpu &cpu) {
   const auto l = static_cast<uint8>(cpu.read(cpu.PC++) + cpu.X);
@@ -142,14 +145,13 @@ inline uint16 addr_inx(Cpu &cpu) {
 inline uint16 addr_iny(Cpu &cpu) {
   const auto l = cpu.read(cpu.PC++);
   const auto h = static_cast<uint8>(l + 1);
-  const auto v = cpu.read(l) | cpu.read(h) << 8;
-  const auto ySigned = static_cast<int8_t>(cpu.Y);
+  const auto v = static_cast<uint16>(cpu.read(l) | cpu.read(h) << 8);
 
-  if (checkPageCross(v, ySigned)) {
+  if (checkPageCross(v, cpu.Y)) {
     cpu.tick();
   }
 
-  return v + ySigned;
+  return v + cpu.Y;
 }
 
 inline uint16 addr_zpg(Cpu &cpu) { return cpu.read(cpu.PC++); }
@@ -240,9 +242,9 @@ static void op_brk(Cpu &cpu) {
   cpu.tick();
 }
 
-static void op_bvc(Cpu &cpu) { branch(cpu, !cpu.P.C); }
+static void op_bvc(Cpu &cpu) { branch(cpu, !cpu.P.V); }
 
-static void op_bvs(Cpu &cpu) { branch(cpu, cpu.P.C); }
+static void op_bvs(Cpu &cpu) { branch(cpu, cpu.P.V); }
 
 static void op_clc(Cpu &cpu) {
   cpu.tick();
@@ -268,7 +270,7 @@ template <addr_func_t T> static void op_cmp(Cpu &cpu) {
   const auto v = cpu.read(T(cpu));
   const auto r = static_cast<uint8>(cpu.A - v);
 
-  cpu.P.C = r >= v;
+  cpu.P.C = cpu.A >= v;
   cpu.P.Z = (r == 0);
   cpu.P.N = r.bit(7);
 }
@@ -277,7 +279,7 @@ template <addr_func_t T> static void op_cpx(Cpu &cpu) {
   const auto v = cpu.read(T(cpu));
   const auto r = static_cast<uint8>(cpu.X - v);
 
-  cpu.P.C = r >= v;
+  cpu.P.C = cpu.X >= v;
   cpu.P.Z = (r == 0);
   cpu.P.N = r.bit(7);
 }
@@ -286,7 +288,7 @@ template <addr_func_t T> static void op_cpy(Cpu &cpu) {
   const auto v = cpu.read(T(cpu));
   const auto r = static_cast<uint8>(cpu.Y - v);
 
-  cpu.P.C = r >= v;
+  cpu.P.C = cpu.Y >= v;
   cpu.P.Z = (r == 0);
   cpu.P.N = r.bit(7);
 }
@@ -364,7 +366,6 @@ static void op_jsr(Cpu &cpu) {
 
 template <addr_func_t T> static void op_lda(Cpu &cpu) {
   cpu.A = cpu.read(T(cpu));
-
   cpu.P.Z = (cpu.A == 0);
   cpu.P.N = cpu.A.bit(7);
 }
@@ -573,9 +574,6 @@ static void op_txa(Cpu &cpu) {
 static void op_txs(Cpu &cpu) {
   cpu.tick();
   cpu.S = cpu.X;
-
-  cpu.P.Z = (cpu.S == 0);
-  cpu.P.N = cpu.S.bit(7);
 }
 
 static void op_tya(Cpu &cpu) {

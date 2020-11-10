@@ -1,4 +1,3 @@
-#include <fstream>
 #include <vector>
 
 #include "nesturbia/mapper.hpp"
@@ -6,14 +5,13 @@
 
 namespace nesturbia {
 
-Mapper::ptr_t Mapper::Create(const std::string &romPath) {
-  auto file = std::ifstream(romPath, std::ios::binary);
-  if (!file) {
+Mapper::ptr_t Mapper::Create(const void *romData, size_t romDataSize) {
+  if (!romData) {
     return nullptr;
   }
 
-  std::vector<uint8> rom;
-  rom.assign(std::istreambuf_iterator<char>(file), {});
+  const auto u8RomData = reinterpret_cast<const uint8_t *>(romData);
+  std::vector<uint8> rom(u8RomData, u8RomData + romDataSize);
 
   if (rom.size() < 16 || rom[0] != 'N' || rom[1] != 'E' || rom[2] != 'S' || rom[3] != 0x1a) {
     return nullptr;

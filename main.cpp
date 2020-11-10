@@ -1,5 +1,8 @@
+#include <cstdint>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "nesturbia/nesturbia.hpp"
 
@@ -9,14 +12,21 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  nesturbia::Nesturbia emulator;
-
-  if (!emulator.LoadRom(argv[1])) {
-    std::cerr << "Could not load ROM '" << argv[1] << "'" << std::endl;
+  auto file = std::ifstream(argv[1], std::ios::binary);
+  if (!file) {
+    std::cerr << "Could not open ROM '" << argv[1] << "'" << std::endl;
     return EXIT_FAILURE;
   }
 
-  emulator.Run();
+  std::vector<uint8_t> rom;
+  rom.assign(std::istreambuf_iterator<char>(file), {});
+
+  nesturbia::Nesturbia emulator;
+
+  if (!emulator.LoadRom(rom.data(), rom.size())) {
+    std::cerr << "Could not load ROM '" << argv[1] << "'" << std::endl;
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }

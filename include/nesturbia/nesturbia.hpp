@@ -22,7 +22,7 @@ struct Nesturbia {
 
   // Public functions
   Nesturbia();
-  bool LoadRom(const std::string &romPath);
+  bool LoadRom(const void *romData, size_t romDataSize);
   void Run();
 
   // Private functions

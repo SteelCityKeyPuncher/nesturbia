@@ -383,29 +383,6 @@ TEST_CASE("Cpu_Instructions_ADC_iny", "[cpu]") {
   CHECK(cpu.P.V == false);
   CHECK(cpu.P.N == true);
   CHECK(cpu.cycles == 7 + 6);
-
-  // ADC: A(0x00) + [0x0000 + Y(0xf8 = -8)](0xbb) + C(0) = 0xbb
-  // Tests page crossing (extra cycle)
-  memory[0x00] = 0x71;
-  memory[0x01] = 0xab;
-
-  memory[0xab] = 0x00;
-  memory[0xac] = 0x00;
-
-  memory[0xfff8] = 0xbb;
-
-  cpu.Power();
-
-  cpu.Y = 0xf8;
-
-  cpu.executeInstruction();
-
-  CHECK(cpu.A == 0xbb);
-  CHECK(cpu.P.C == false);
-  CHECK(cpu.P.Z == false);
-  CHECK(cpu.P.V == false);
-  CHECK(cpu.P.N == true);
-  CHECK(cpu.cycles == 7 + 6);
 }
 
 TEST_CASE("Cpu_Instructions_ADC_zpx", "[cpu]") {
