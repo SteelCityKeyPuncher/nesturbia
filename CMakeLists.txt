@@ -49,7 +49,20 @@ target_link_libraries(${PROJECT_NAME}-bin nesturbia)
 set_target_properties(${PROJECT_NAME}-bin PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 
-## Testing framework (Catch2) ##
+## Third-party code ##
+
+# GLFW (graphics context creation)
+set(GLFW_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glfw")
+set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
+set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
+set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
+set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
+add_subdirectory("${GLFW_DIR}")
+target_link_libraries(${PROJECT_NAME}-bin "glfw" "${GLFW_LIBRARIES}")
+target_include_directories(${PROJECT_NAME}-bin PRIVATE "${GLFW_DIR}/include")
+target_compile_definitions(${PROJECT_NAME}-bin PRIVATE "GLFW_INCLUDE_NONE")
+
+# Catch2 (testing framework)
 set(CATCH2_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Catch2")
 add_subdirectory("${CATCH2_DIR}")
 
