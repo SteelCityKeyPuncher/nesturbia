@@ -57,6 +57,7 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/tya.cpp
   tests/cpu/memory.cpp
   tests/cpu/power.cpp
+  tests/nesturbia/memory.cpp
 )
 
 set_target_properties(${PROJECT_NAME}-test PROPERTIES CXX_STANDARD 17)
