@@ -18,8 +18,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ## Library ##
 add_library(${PROJECT_NAME}
+  src/apu.cpp
   src/cpu.cpp
   src/nesturbia.cpp
+  src/ppu.cpp
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
