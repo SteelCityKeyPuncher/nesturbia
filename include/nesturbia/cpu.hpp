@@ -34,6 +34,7 @@ struct Cpu {
 
   using read_callback_t = std::function<uint8(uint16)>;
   using write_callback_t = std::function<void(uint16, uint8)>;
+  using tick_callback_t = std::function<void(void)>;
 
   // Data
   uint8 A;
@@ -45,11 +46,12 @@ struct Cpu {
 
   read_callback_t readCallback;
   write_callback_t writeCallback;
+  tick_callback_t tickCallback;
 
   uint32_t cycles;
 
   // Public functions
-  Cpu(read_callback_t readCallback, write_callback_t writeCallback);
+  Cpu(read_callback_t readCallback, write_callback_t writeCallback, tick_callback_t tickCallback);
 
   void Power();
 

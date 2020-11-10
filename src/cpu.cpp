@@ -11,8 +11,9 @@ extern const std::array<void (*)(Cpu &), 256> instructions;
 
 } // namespace
 
-Cpu::Cpu(read_callback_t readCallback, write_callback_t writeCallback)
-    : readCallback(std::move(readCallback)), writeCallback(std::move(writeCallback)) {}
+Cpu::Cpu(read_callback_t readCallback, write_callback_t writeCallback, tick_callback_t tickCallback)
+    : readCallback(std::move(readCallback)), writeCallback(std::move(writeCallback)),
+      tickCallback(std::move(tickCallback)) {}
 
 void Cpu::Power() {
   A = 0x00;
@@ -63,7 +64,12 @@ void Cpu::push16(uint16 value) {
   push(value);
 }
 
-void Cpu::tick() { ++cycles; }
+void Cpu::tick() {
+  ++cycles;
+  if (tickCallback) {
+    tickCallback();
+  }
+}
 
 void Cpu::executeInstruction() {
   const auto opcode = read(PC++);

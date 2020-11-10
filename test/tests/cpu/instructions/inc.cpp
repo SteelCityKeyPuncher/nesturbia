@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_INC_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // INC: [0xab](0xaa)++ = 0xab
   memory[0x00] = 0xe6;
@@ -34,7 +34,7 @@ TEST_CASE("Cpu_Instructions_INC_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // INC: [0xbeef](0xff)++ = 0x00
   memory[0x00] = 0xee;
@@ -58,7 +58,7 @@ TEST_CASE("Cpu_Instructions_INC_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // INC: [0xab + X(3)](0x7e) = 0x7f
   memory[0x00] = 0xf6;
@@ -84,7 +84,7 @@ TEST_CASE("Cpu_Instructions_INC_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // INC: [0xbeef + X(3)](0x00)++ = 0x01
   memory[0x00] = 0xfe;

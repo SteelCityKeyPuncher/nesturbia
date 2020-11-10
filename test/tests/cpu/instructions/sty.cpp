@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_STY_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STY: [0xab] = Y(0xbb)
   memory[0x00] = 0x84;
@@ -33,7 +33,7 @@ TEST_CASE("Cpu_Instructions_STY_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STY: [0xbeef] = T(0xbb)
   memory[0x00] = 0x8c;
@@ -56,7 +56,7 @@ TEST_CASE("Cpu_Instructions_STY_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STY: [0xab + X(3)] = Y(0xbb)
   memory[0x00] = 0x94;

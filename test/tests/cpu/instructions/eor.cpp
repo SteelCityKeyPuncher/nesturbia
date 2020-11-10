@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_EOR_inx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) ^ [0xbeef](0xbb) = 0x11
   memory[0x00] = 0x41;
@@ -80,7 +80,7 @@ TEST_CASE("Cpu_Instructions_EOR_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) ^ [0xab](0xbb) = 0x11
   memory[0x00] = 0x45;
@@ -106,7 +106,7 @@ TEST_CASE("Cpu_Instructions_EOR_imm", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) ^ imm(0xbb) = 0x11
   memory[0x00] = 0x49;
@@ -130,7 +130,7 @@ TEST_CASE("Cpu_Instructions_EOR_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) ^ [0xbeef](0xbb) = 0x11
   memory[0x00] = 0x4d;
@@ -157,7 +157,7 @@ TEST_CASE("Cpu_Instructions_EOR_iny", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) ^ [0xbeef + Y(0)](0xbb) = 0x11
   memory[0x00] = 0x51;
@@ -208,7 +208,7 @@ TEST_CASE("Cpu_Instructions_EOR_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) + [0xab + X(3)](0xbb) = 0x11
   memory[0x00] = 0x55;
@@ -235,7 +235,7 @@ TEST_CASE("Cpu_Instructions_EOR_aby", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xaa) ^ [0xbeef + Y(3)](0xbb) = 0x11
   memory[0x00] = 0x59;
@@ -283,7 +283,7 @@ TEST_CASE("Cpu_Instructions_EOR_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // EOR: A(0xb9) ^ [0xbeef + X(3)](0x2e) = 0x11
   memory[0x00] = 0x5d;

@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_LDA_inx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xbeef](0x11)
   memory[0x00] = 0xa1;
@@ -71,7 +71,7 @@ TEST_CASE("Cpu_Instructions_LDA_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xab](0xbb)
   memory[0x00] = 0xa5;
@@ -94,7 +94,7 @@ TEST_CASE("Cpu_Instructions_LDA_imm", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = imm(0xbb)
   memory[0x00] = 0xa9;
@@ -115,7 +115,7 @@ TEST_CASE("Cpu_Instructions_LDA_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xbeef](0xbb)
   memory[0x00] = 0xad;
@@ -139,7 +139,7 @@ TEST_CASE("Cpu_Instructions_LDA_iny", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xbeef + Y(0)](0xbb)
   memory[0x00] = 0xb1;
@@ -186,7 +186,7 @@ TEST_CASE("Cpu_Instructions_LDA_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xab + X(3)](0xbb)
   memory[0x00] = 0xb5;
@@ -212,7 +212,7 @@ TEST_CASE("Cpu_Instructions_LDA_aby", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xbeef + Y(3)](0xbb)
   memory[0x00] = 0xb9;
@@ -258,7 +258,7 @@ TEST_CASE("Cpu_Instructions_LDA_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDA: A = [0xbeef + X(3)](0xbb)
   memory[0x00] = 0xbd;

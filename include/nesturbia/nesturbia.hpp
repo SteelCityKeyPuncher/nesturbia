@@ -28,6 +28,7 @@ struct Nesturbia {
   // Private functions
   uint8 cpuReadCallback(uint16 address);
   void cpuWriteCallback(uint16 address, uint8 value);
+  void cpuTickCallback();
 };
 
 } // namespace nesturbia

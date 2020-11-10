@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_BRK", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // BRK
   memory[0x00] = 0x00;

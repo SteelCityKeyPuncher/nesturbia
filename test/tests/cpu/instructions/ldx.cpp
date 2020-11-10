@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_LDX_imm", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDX: X = imm(0xbb)
   memory[0x00] = 0xa2;
@@ -32,7 +32,7 @@ TEST_CASE("Cpu_Instructions_LDX_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDX: X = [0xab](0xff)
   memory[0x00] = 0xa6;
@@ -83,7 +83,7 @@ TEST_CASE("Cpu_Instructions_LDX_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDX: X = [0xbeef](0xff)
   memory[0x00] = 0xae;
@@ -107,7 +107,7 @@ TEST_CASE("Cpu_Instructions_LDX_zpy", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDX: X = [0xab + Y(3)](0xff)
   memory[0x00] = 0xb6;
@@ -133,7 +133,7 @@ TEST_CASE("Cpu_Instructions_LDX_aby", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // LDX: X = [0xbeef + Y(3)](0xff)
   // No page cross / no extra cycle

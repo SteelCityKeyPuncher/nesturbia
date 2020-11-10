@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Memory", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // This memory is initialized to zero, so read a random address to verify this
   CHECK(read(0xffff) == 0);

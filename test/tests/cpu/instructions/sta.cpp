@@ -11,7 +11,7 @@ TEST_CASE("Cpu_Instructions_STA_inx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xbeef] = A(0x11)
   memory[0x00] = 0x81;
@@ -36,7 +36,7 @@ TEST_CASE("Cpu_Instructions_STA_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xab] = A(0xbb)
   memory[0x00] = 0x85;
@@ -58,7 +58,7 @@ TEST_CASE("Cpu_Instructions_STA_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xbeef] = A(0xbb)
   memory[0x00] = 0x8d;
@@ -81,7 +81,7 @@ TEST_CASE("Cpu_Instructions_STA_iny", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xbeef + Y(0)] = A(0xbb)
   memory[0x00] = 0x91;
@@ -124,7 +124,7 @@ TEST_CASE("Cpu_Instructions_STA_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xab + X(3)] = A(0xbb)
   memory[0x00] = 0x95;
@@ -147,7 +147,7 @@ TEST_CASE("Cpu_Instructions_STA_aby", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xbeef + Y(3)] = A(0xbb)
   memory[0x00] = 0x99;
@@ -187,7 +187,7 @@ TEST_CASE("Cpu_Instructions_STA_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write);
+  nesturbia::Cpu cpu(read, write, [] {});
 
   // STA: [0xbeef + X(3)] = A(0xbb)
   memory[0x00] = 0x9d;
