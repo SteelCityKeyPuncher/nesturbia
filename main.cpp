@@ -247,6 +247,11 @@ void runLoop() {
   // Set to a negative value to guarantee that rendering occurs in the first iteration
   double lastFrameTime = -1.0;
 
+  glUseProgram(shader);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glBindVertexArray(VAO);
+
   // Fixed time step rendering logic
   // Run the update logic as fast as possible
   // If enough time has elapsed to actually render, then do so
@@ -270,14 +275,6 @@ void runLoop() {
 
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 240, GL_RGB, GL_UNSIGNED_BYTE,
                       pixelBuffer.data());
-
-      glUseProgram(shader);
-
-      // TODO with only one texture/vertex array, this might not be necessary to do every loop
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, texture);
-
-      glBindVertexArray(VAO);
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
       // Finish up window rendering (swap buffers)
