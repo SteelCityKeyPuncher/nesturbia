@@ -244,8 +244,7 @@ void runLoop() {
   double lastUpdateTime = 0.0;
 
   // Used to determine the duration since the previous render
-  // Set to a negative value to guarantee that rendering occurs in the first
-  // iteration
+  // Set to a negative value to guarantee that rendering occurs in the first iteration
   double lastFrameTime = -1.0;
 
   // Fixed time step rendering logic
@@ -283,7 +282,14 @@ void runLoop() {
 
       // Finish up window rendering (swap buffers)
       glfwSwapBuffers(glfwWindow.get());
+
+      // TODO input polling
       glfwPollEvents();
+
+      // TODO: Temporary, close the window if the ESC key is pressed
+      if (glfwGetKey(glfwWindow.get(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(glfwWindow.get(), true);
+      }
     }
   }
 }
