@@ -62,6 +62,13 @@ target_link_libraries(${PROJECT_NAME}-bin "glfw" "${GLFW_LIBRARIES}")
 target_include_directories(${PROJECT_NAME}-bin PRIVATE "${GLFW_DIR}/include")
 target_compile_definitions(${PROJECT_NAME}-bin PRIVATE "GLFW_INCLUDE_NONE")
 
+# glad (GL loader generator)
+set(GLAD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glad")
+add_library("glad" "${GLAD_DIR}/src/glad.c")
+target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
+target_include_directories(${PROJECT_NAME}-bin PRIVATE "${GLAD_DIR}/include")
+target_link_libraries(${PROJECT_NAME}-bin "glad" "${CMAKE_DL_LIBS}")
+
 # Catch2 (testing framework)
 set(CATCH2_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Catch2")
 add_subdirectory("${CATCH2_DIR}")
