@@ -64,7 +64,7 @@ TEST_CASE("Nesturbia_Mapper0_InvalidCHRSize", "[mapper]") {
 
 TEST_CASE("Nesturbia_Mapper0_InvalidROMSize", "[mapper]") {
   // Test when the ROM file is not large enough to hold header + PRG + CHR sections
-  std::array<uint8_t, 0x100> rom;
+  std::array<uint8_t, 0x10000> rom;
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -76,6 +76,11 @@ TEST_CASE("Nesturbia_Mapper0_InvalidROMSize", "[mapper]") {
   // CHR-ROM: 1 * 8K
   rom[5] = 1;
 
-  auto mapper = nesturbia::Mapper::Create(rom.data(), rom.size());
+  // Too small
+  auto mapper = nesturbia::Mapper::Create(rom.data(), 0x100);
+  CHECK(mapper == nullptr);
+
+  // Too big
+  mapper = nesturbia::Mapper::Create(rom.data(), 0x10000);
   CHECK(mapper == nullptr);
 }
