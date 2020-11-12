@@ -9,7 +9,7 @@ Ppu::Ppu(set_pixel_callback_t setPixelCallback) : setPixelCallback(std::move(set
 
 bool Ppu::Tick() {
   // TODO
-  if (y == 240 && x == 0) {
+  if (scanline == 240 && dot == 0) {
     static uint8_t z = 0;
     for (uint16_t xx = 0; xx < 256; xx++) {
       for (uint16_t yy = 0; yy < 240; yy++) {
@@ -18,17 +18,19 @@ bool Ppu::Tick() {
     }
     z += 4;
 
+    // Return true so that the PPU pixels are written to the screen
     return true;
   }
 
-  if (++x == 341) {
-    x = 0;
-    if (++y == 262) {
-      y = 0;
+  if (++dot == 341) {
+    dot = 0;
+    if (++scanline == 262) {
+      scanline = 0;
       isOddFrame = !isOddFrame;
     }
   }
 
+  // Not yet ready to update the screen
   return false;
 }
 

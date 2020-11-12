@@ -31,8 +31,8 @@ struct Ppu {
   uint8 oamaddr = 0;
   uint8 oamdata = 0;
 
-  uint16_t x = 0;
-  uint16_t y = 0;
+  uint16 scanline = 0;
+  uint16 dot = 0;
   bool isOddFrame = false;
 
   bool writeLatch = false;
