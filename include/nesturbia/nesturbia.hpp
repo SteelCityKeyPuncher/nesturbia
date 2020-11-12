@@ -20,15 +20,20 @@ struct Nesturbia {
   Apu apu;
   Mapper::ptr_t mapper;
 
+  std::array<uint8, 256 * 240 * 3> pixels;
+  bool isNewFrame;
+
   // Public functions
   Nesturbia();
   bool LoadRom(const void *romData, size_t romDataSize);
-  void Run();
+  void RunFrame();
 
   // Private functions
   uint8 cpuReadCallback(uint16 address);
   void cpuWriteCallback(uint16 address, uint8 value);
   void cpuTickCallback();
+
+  void setPixelCallback(uint8 x, uint8 y, uint32_t color);
 };
 
 } // namespace nesturbia

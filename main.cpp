@@ -43,7 +43,6 @@ GLuint texture = -1;
 GLuint VAO = -1;
 GLuint VBO = -1;
 GLuint EBO = -1;
-std::array<uint8_t, 256 * 240 * 3> pixelBuffer;
 
 // Local functions
 bool parseArguments(int argc, char **argv);
@@ -233,7 +232,8 @@ bool initializeGraphics() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 240, 0, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 240, 0, GL_RGB, GL_UNSIGNED_BYTE,
+               emulator.pixels.data());
 
   // Success
   return true;
@@ -268,13 +268,10 @@ void runLoop() {
       // Prepare the window for rendering (clear color buffer)
       glClear(GL_COLOR_BUFFER_BIT);
 
-      // TODO get pixels from emulator
-      for (auto &byte : pixelBuffer) {
-        byte = rand() & 0xff;
-      }
+      emulator.RunFrame();
 
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 240, GL_RGB, GL_UNSIGNED_BYTE,
-                      pixelBuffer.data());
+                      emulator.pixels.data());
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
       // Finish up window rendering (swap buffers)

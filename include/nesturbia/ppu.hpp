@@ -1,6 +1,8 @@
 #ifndef NESTURBIA_PPU_HPP_INCLUDED
 #define NESTURBIA_PPU_HPP_INCLUDED
 
+#include <functional>
+
 #include "nesturbia/types.hpp"
 
 namespace nesturbia {
@@ -18,6 +20,8 @@ struct Ppu {
     unsigned val : 15;
     unsigned addr : 14;
   };
+
+  using set_pixel_callback_t = std::function<void(uint8, uint8, uint32_t)>;
 
   // Data
   // Registers
@@ -38,8 +42,12 @@ struct Ppu {
   addr_t vramAddr;
   addr_t vramAddrTemp;
 
+  set_pixel_callback_t setPixelCallback;
+
   // Public functions
-  void Tick();
+  Ppu(set_pixel_callback_t setPixelCallback);
+
+  bool Tick();
   uint8 Read(uint16 address);
   void Write(uint16 address, uint8 value);
 

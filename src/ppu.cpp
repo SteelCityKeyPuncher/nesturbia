@@ -1,11 +1,25 @@
 #include <cassert>
+#include <utility>
 
 #include "nesturbia/ppu.hpp"
 
 namespace nesturbia {
 
-void Ppu::Tick() {
+Ppu::Ppu(set_pixel_callback_t setPixelCallback) : setPixelCallback(std::move(setPixelCallback)) {}
+
+bool Ppu::Tick() {
   // TODO
+  if (y == 240 && x == 0) {
+    static uint8_t z = 0;
+    for (uint16_t xx = 0; xx < 256; xx++) {
+      for (uint16_t yy = 0; yy < 240; yy++) {
+        setPixelCallback(xx, yy, z << 16);
+      }
+    }
+    z += 4;
+
+    return true;
+  }
 
   if (++x == 341) {
     x = 0;
@@ -14,6 +28,8 @@ void Ppu::Tick() {
       isOddFrame = !isOddFrame;
     }
   }
+
+  return false;
 }
 
 uint8 Ppu::Read(uint16 address) {
