@@ -5,7 +5,10 @@
 
 namespace nesturbia {
 
-Ppu::Ppu(set_pixel_callback_t setPixelCallback) : setPixelCallback(std::move(setPixelCallback)) {}
+Ppu::Ppu(chr_read_callback_t chrReadCallback, chr_write_callback_t chrWriteCallback,
+         set_pixel_callback_t setPixelCallback)
+    : chrReadCallback(std::move(chrReadCallback)), chrWriteCallback(std::move(chrWriteCallback)),
+      setPixelCallback(std::move(setPixelCallback)) {}
 
 bool Ppu::Tick() {
   // TODO
@@ -34,7 +37,7 @@ bool Ppu::Tick() {
   return false;
 }
 
-uint8 Ppu::Read(uint16 address) {
+uint8 Ppu::ReadRegister(uint16 address) {
   assert(address >= 0x2000 && address < 0x4000);
 
   switch (address & 0x7) {
@@ -62,7 +65,7 @@ uint8 Ppu::Read(uint16 address) {
   return latchedValue;
 }
 
-void Ppu::Write(uint16 address, uint8 value) {
+void Ppu::WriteRegister(uint16 address, uint8 value) {
   assert(address >= 0x2000 && address < 0x4000);
 
   // Latch the last written value
@@ -73,7 +76,7 @@ void Ppu::Write(uint16 address, uint8 value) {
   switch (address & 0x7) {
   case 0:
     ctrl = value;
-    vramAddrTemp.fields.nametable = ctrl & 0x3;
+    vramAddrTemp.fields.nametable = ctrl.nametable;
     break;
 
   case 1:
@@ -89,7 +92,7 @@ void Ppu::Write(uint16 address, uint8 value) {
     break;
 
   case 4:
-    oamdata = value;
+    oam[oamaddr++] = value;
     break;
 
   case 5:
@@ -124,6 +127,46 @@ void Ppu::Write(uint16 address, uint8 value) {
   default:
     // TODO PPUDATA
     break;
+  }
+}
+
+uint8 Ppu::read(uint16 address) {
+  if (address < 0x2000) {
+    // Read mapper CHR-ROM/RAM
+    if (chrReadCallback) {
+      return chrReadCallback(address);
+    }
+
+    return 0;
+  }
+
+  if (address < 0x3f00) {
+    return 0;
+  }
+
+  if (address < 0x4000) {
+    return 0;
+  }
+
+  return 0;
+}
+
+void Ppu::write(uint16 address, uint8 value) {
+  if (address < 0x2000) {
+    // Write mapper CHR-ROM/RAM
+    if (chrWriteCallback) {
+      chrWriteCallback(address, value);
+    }
+
+    return;
+  }
+
+  if (address < 0x3f00) {
+    return;
+  }
+
+  if (address < 0x4000) {
+    return;
   }
 }
 

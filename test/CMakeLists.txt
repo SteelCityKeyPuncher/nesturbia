@@ -59,7 +59,7 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/power.cpp
   tests/mappers/mapper0.cpp
   tests/nesturbia/memory.cpp
-  tests/ppu/memory.cpp
+  tests/ppu/registers.cpp
 )
 
 set_target_properties(${PROJECT_NAME}-test PROPERTIES CXX_STANDARD 17)

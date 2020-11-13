@@ -33,6 +33,8 @@ struct Nesturbia {
   void cpuWriteCallback(uint16 address, uint8 value);
   void cpuTickCallback();
 
+  uint8 readChrCallback(uint16 address);
+  void writeChrCallback(uint16 address, uint8 value);
   void setPixelCallback(uint8 x, uint8 y, uint32_t color);
 };
 

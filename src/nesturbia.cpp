@@ -6,7 +6,9 @@ Nesturbia::Nesturbia()
     : cpu([this](uint16 address) { return cpuReadCallback(address); },
           [this](uint16 address, uint8 value) { cpuWriteCallback(address, value); },
           [this] { cpuTickCallback(); }),
-      ppu([this](uint8 x, uint8 y, uint32_t color) { setPixelCallback(x, y, color); }) {}
+      ppu([this](uint16 address) { return readChrCallback(address); },
+          [this](uint16 address, uint8 value) { writeChrCallback(address, value); },
+          [this](uint8 x, uint8 y, uint32_t color) { setPixelCallback(x, y, color); }) {}
 
 bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   mapper = Mapper::Create(romData, romDataSize);
@@ -32,7 +34,7 @@ uint8 Nesturbia::cpuReadCallback(uint16 address) {
     return ram[address & 0x7ff];
   } else if (address < 0x4000) {
     // PPU registers (and their mirrors)
-    return ppu.Read(address);
+    return ppu.ReadRegister(address);
   } else if (address >= 0x4018) {
     return mapper->Read(address);
   }
@@ -47,7 +49,7 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
     ram[address & 0x7ff] = value;
   } else if (address < 0x4000) {
     // PPU registers (and their mirrors)
-    ppu.Write(address, value);
+    ppu.WriteRegister(address, value);
   } else if (address >= 0x4018) {
     mapper->Write(address, value);
   }
@@ -60,6 +62,20 @@ void Nesturbia::cpuTickCallback() {
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
+}
+
+uint8 Nesturbia::readChrCallback(uint16 address) {
+  if (mapper) {
+    return mapper->ReadChr(address);
+  }
+
+  return 0;
+}
+
+void Nesturbia::writeChrCallback(uint16 address, uint8 value) {
+  if (mapper) {
+    mapper->WriteChr(address, value);
+  }
 }
 
 void Nesturbia::setPixelCallback(uint8 x, uint8 y, uint32_t color) {
