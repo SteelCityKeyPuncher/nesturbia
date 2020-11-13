@@ -5,21 +5,18 @@
 
 namespace nesturbia {
 
-Ppu::Ppu(chr_read_callback_t chrReadCallback, chr_write_callback_t chrWriteCallback,
-         set_pixel_callback_t setPixelCallback)
-    : chrReadCallback(std::move(chrReadCallback)), chrWriteCallback(std::move(chrWriteCallback)),
-      setPixelCallback(std::move(setPixelCallback)) {}
+Ppu::Ppu(Cartridge &cartridge, set_pixel_callback_t setPixelCallback)
+    : cartridge(cartridge), setPixelCallback(std::move(setPixelCallback)) {}
 
 bool Ppu::Tick() {
   // TODO
   if (scanline == 240 && dot == 0) {
-    static uint8_t z = 0;
+    static uint32_t z = 0;
     for (uint16_t xx = 0; xx < 256; xx++) {
       for (uint16_t yy = 0; yy < 240; yy++) {
-        setPixelCallback(xx, yy, z << 16);
+        setPixelCallback(xx, yy, z += 17 & 0xff);
       }
     }
-    z += 4;
 
     // Return true so that the PPU pixels are written to the screen
     return true;
@@ -133,11 +130,7 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
 uint8 Ppu::read(uint16 address) {
   if (address < 0x2000) {
     // Read mapper CHR-ROM/RAM
-    if (chrReadCallback) {
-      return chrReadCallback(address);
-    }
-
-    return 0;
+    return cartridge.ReadChr(address);
   }
 
   if (address < 0x3f00) {
@@ -154,11 +147,7 @@ uint8 Ppu::read(uint16 address) {
 void Ppu::write(uint16 address, uint8 value) {
   if (address < 0x2000) {
     // Write mapper CHR-ROM/RAM
-    if (chrWriteCallback) {
-      chrWriteCallback(address, value);
-    }
-
-    return;
+    return cartridge.WriteChr(address, value);
   }
 
   if (address < 0x3f00) {

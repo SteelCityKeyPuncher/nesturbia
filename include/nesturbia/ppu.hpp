@@ -3,6 +3,7 @@
 
 #include <functional>
 
+#include "nesturbia/cartridge.hpp"
 #include "nesturbia/types.hpp"
 
 namespace nesturbia {
@@ -77,11 +78,12 @@ struct Ppu {
     }
   };
 
-  using chr_read_callback_t = std::function<uint8(uint16)>;
-  using chr_write_callback_t = std::function<void(uint16, uint8)>;
   using set_pixel_callback_t = std::function<void(uint8, uint8, uint32_t)>;
 
   // Data
+  // Cartridge reference
+  Cartridge &cartridge;
+
   // Registers
   ppuctrl_t ctrl;
   ppumask_t mask;
@@ -105,13 +107,10 @@ struct Ppu {
   // OAM memory
   std::array<uint8, 0x100> oam;
 
-  chr_read_callback_t chrReadCallback;
-  chr_write_callback_t chrWriteCallback;
   set_pixel_callback_t setPixelCallback;
 
   // Public functions
-  Ppu(chr_read_callback_t chrReadCallback, chr_write_callback_t chrWriteCallback,
-      set_pixel_callback_t setPixelCallback);
+  Ppu(Cartridge &cartridge, set_pixel_callback_t setPixelCallback);
 
   bool Tick();
   uint8 ReadRegister(uint16 address);

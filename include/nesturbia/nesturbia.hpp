@@ -5,6 +5,7 @@
 #include <string>
 
 #include "nesturbia/apu.hpp"
+#include "nesturbia/cartridge.hpp"
 #include "nesturbia/cpu.hpp"
 #include "nesturbia/mapper.hpp"
 #include "nesturbia/ppu.hpp"
@@ -14,11 +15,12 @@ namespace nesturbia {
 
 struct Nesturbia {
   // Data
-  std::array<uint8, 0x800> ram;
+  Cartridge cartridge;
   Cpu cpu;
   Ppu ppu;
   Apu apu;
-  Mapper::ptr_t mapper;
+
+  std::array<uint8, 0x800> ram;
 
   std::array<uint8, 256 * 240 * 3> pixels;
   bool isNewFrame;

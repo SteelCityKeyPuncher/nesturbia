@@ -6,16 +6,15 @@ Nesturbia::Nesturbia()
     : cpu([this](uint16 address) { return cpuReadCallback(address); },
           [this](uint16 address, uint8 value) { cpuWriteCallback(address, value); },
           [this] { cpuTickCallback(); }),
-      ppu([this](uint16 address) { return readChrCallback(address); },
-          [this](uint16 address, uint8 value) { writeChrCallback(address, value); },
-          [this](uint8 x, uint8 y, uint32_t color) { setPixelCallback(x, y, color); }) {}
+      ppu(cartridge, [this](uint8 x, uint8 y, uint32_t color) { setPixelCallback(x, y, color); }) {}
 
 bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
-  mapper = Mapper::Create(romData, romDataSize);
+  if (!cartridge.LoadRom(romData, romDataSize)) {
+    return false;
+  }
 
   cpu.Power();
-
-  return mapper != nullptr;
+  return true;
 }
 
 void Nesturbia::RunFrame() {
@@ -36,7 +35,7 @@ uint8 Nesturbia::cpuReadCallback(uint16 address) {
     // PPU registers (and their mirrors)
     return ppu.ReadRegister(address);
   } else if (address >= 0x4018) {
-    return mapper->Read(address);
+    return cartridge.Read(address);
   }
 
   // TODO other peripherals
@@ -51,7 +50,7 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
     // PPU registers (and their mirrors)
     ppu.WriteRegister(address, value);
   } else if (address >= 0x4018) {
-    mapper->Write(address, value);
+    cartridge.Write(address, value);
   }
 
   // TODO other peripherals
@@ -62,20 +61,6 @@ void Nesturbia::cpuTickCallback() {
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
-}
-
-uint8 Nesturbia::readChrCallback(uint16 address) {
-  if (mapper) {
-    return mapper->ReadChr(address);
-  }
-
-  return 0;
-}
-
-void Nesturbia::writeChrCallback(uint16 address, uint8 value) {
-  if (mapper) {
-    mapper->WriteChr(address, value);
-  }
 }
 
 void Nesturbia::setPixelCallback(uint8 x, uint8 y, uint32_t color) {

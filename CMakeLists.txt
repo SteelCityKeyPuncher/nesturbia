@@ -19,6 +19,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 ## Library ##
 add_library(${PROJECT_NAME}
   src/apu.cpp
+  src/cartridge.cpp
   src/cpu.cpp
   src/mapper.cpp
   src/mappers/mapper0.cpp
