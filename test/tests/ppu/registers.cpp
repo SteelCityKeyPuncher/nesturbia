@@ -62,6 +62,40 @@ TEST_CASE("Ppu_RegPpumask", "[ppu]") {
   CHECK(ppu.mask.emphasizeBlue == false);
 }
 
+TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
+  // Test various PPUCTRL register settings
+  nesturbia::Ppu ppu([](uint16) -> uint8 { return 0; }, [](uint16, uint8) {},
+                     [](uint8, uint8, uint32_t) {});
+
+  ppu.status.latchedData = 0;
+  ppu.status.spriteOverflow = false;
+  ppu.status.sprite0Hit = false;
+  ppu.status.vblankStarted = false;
+
+  // Write to PPUSTATUS (0x2002)
+  // PPUSTATUS is read-only, so its value does not change due to this write
+  ppu.WriteRegister(0x2002, 0x3a);
+  CHECK(ppu.status == 0);
+
+  // The above write caused 0x3a to be latched by the PPU
+  // That means that reading PPUSTATUS will have the bottom 5 bits match that latched value
+  CHECK(ppu.ReadRegister(0x2002) == 0x1a);
+
+  // Ensure that reading PPUSTATUS clears the write latch used by PPUSCROLL/PPUADDR
+  ppu.writeLatch = true;
+  static_cast<void>(ppu.ReadRegister(0x2002));
+
+  CHECK(ppu.writeLatch == false);
+
+  // Check other bits of the status register
+  // Use a mirror of 0x2002 (0x3ffa)
+  ppu.status.spriteOverflow = true;
+  ppu.status.sprite0Hit = true;
+  ppu.status.vblankStarted = true;
+
+  CHECK(ppu.ReadRegister(0x3ffa) == 0xfa);
+}
+
 TEST_CASE("Ppu_ReadLatch", "[ppu]") {
   // Test that reading write-only registers produces the last value written
   nesturbia::Ppu ppu([](uint16) -> uint8 { return 0; }, [](uint16, uint8) {},

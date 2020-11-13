@@ -42,9 +42,9 @@ uint8 Ppu::ReadRegister(uint16 address) {
 
   switch (address & 0x7) {
   case 2:
-    // Bottom 5 bits are not updated for this register
-    latchedValue &= 0x1f;
-    latchedValue |= (status & 0xe0);
+    // The bottom 5 bits are the same as the latched value
+    status.latchedData = latchedValue & 0x1f;
+    latchedValue = status;
 
     // Reading this register clears the write latch
     writeLatch = false;
@@ -84,7 +84,7 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     break;
 
   case 2:
-    // PPUSTATUS is read-only
+    // PPUSTATUS is read-only (nothing to do here)
     break;
 
   case 3:

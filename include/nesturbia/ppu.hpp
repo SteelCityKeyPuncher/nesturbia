@@ -66,6 +66,17 @@ struct Ppu {
     }
   };
 
+  struct ppustatus_t {
+    uint8_t latchedData : 5;
+    bool spriteOverflow;
+    bool sprite0Hit;
+    bool vblankStarted;
+
+    operator unsigned() const {
+      return latchedData | spriteOverflow << 5 | sprite0Hit << 6 | vblankStarted << 7;
+    }
+  };
+
   using chr_read_callback_t = std::function<uint8(uint16)>;
   using chr_write_callback_t = std::function<void(uint16, uint8)>;
   using set_pixel_callback_t = std::function<void(uint8, uint8, uint32_t)>;
@@ -74,7 +85,7 @@ struct Ppu {
   // Registers
   ppuctrl_t ctrl;
   ppumask_t mask;
-  uint8 status;
+  ppustatus_t status;
   uint8 oamaddr;
 
   uint16 scanline;
