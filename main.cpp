@@ -10,6 +10,7 @@
 #include "nesturbia/nesturbia.hpp"
 
 namespace {
+
 // Constants
 constexpr auto kWindowTitle = "NESturbia";
 constexpr double kFrameTime = 1.0 / 60.0;
@@ -50,6 +51,7 @@ bool initializeGraphics();
 void runLoop();
 void glfwErrorCallback(int error, const char *description);
 void glfwWindowSizeCallback(GLFWwindow *window, int, int);
+
 } // namespace
 
 int main(int argc, char **argv) {
@@ -233,7 +235,7 @@ bool initializeGraphics() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 240, 0, GL_RGB, GL_UNSIGNED_BYTE,
-               emulator.pixels.data());
+               emulator.ppu.pixels.data());
 
   // Success
   return true;
@@ -257,10 +259,7 @@ void runLoop() {
   // If enough time has elapsed to actually render, then do so
   while (!glfwWindowShouldClose(glfwWindow.get())) {
     const auto currentTime = glfwGetTime();
-    // TODO const auto deltaTime = static_cast<float>(currentTime - lastUpdateTime);
-    // TODO lastUpdateTime = currentTime;
-
-    // TODO update inputs and logic
+    // TODO read inputs - here after glfwPollEvents()?
 
     // See if we can render in this loop
     if ((currentTime - lastFrameTime) >= kFrameTime) {
@@ -271,7 +270,7 @@ void runLoop() {
       emulator.RunFrame();
 
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 240, GL_RGB, GL_UNSIGNED_BYTE,
-                      emulator.pixels.data());
+                      emulator.ppu.pixels.data());
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
       // Finish up window rendering (swap buffers)
@@ -299,4 +298,5 @@ void glfwWindowSizeCallback(GLFWwindow *window, int, int) {
   glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
   glViewport(0, 0, frameBufferWidth, frameBufferHeight);
 }
+
 } // namespace

@@ -5,8 +5,7 @@
 
 namespace nesturbia {
 
-Ppu::Ppu(Cartridge &cartridge, set_pixel_callback_t setPixelCallback)
-    : cartridge(cartridge), setPixelCallback(std::move(setPixelCallback)) {}
+Ppu::Ppu(Cartridge &cartridge) : cartridge(cartridge) {}
 
 bool Ppu::Tick() {
   // TODO
@@ -14,7 +13,13 @@ bool Ppu::Tick() {
     static uint32_t z = 0;
     for (uint16_t xx = 0; xx < 256; xx++) {
       for (uint16_t yy = 0; yy < 240; yy++) {
-        setPixelCallback(xx, yy, z += 17 & 0xff);
+        // TODO bounds check
+        uint8 *pixel = &pixels[(yy * 256 + xx) * 3];
+
+        *(pixel++) = 0;
+        *(pixel++) = 0;
+        *pixel++ = z;
+        z += rand();
       }
     }
 

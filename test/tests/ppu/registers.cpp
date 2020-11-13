@@ -10,7 +10,7 @@ using namespace nesturbia;
 TEST_CASE("Ppu_RegPpuctrl", "[ppu]") {
   // Test various PPUCTRL register settings
   nesturbia::Cartridge cartridge;
-  nesturbia::Ppu ppu(cartridge, [](uint8, uint8, uint32_t) {});
+  nesturbia::Ppu ppu(cartridge);
 
   // Write directly to 0x2000
   ppu.WriteRegister(0x2000, 0xff);
@@ -36,7 +36,7 @@ TEST_CASE("Ppu_RegPpuctrl", "[ppu]") {
 TEST_CASE("Ppu_RegPpumask", "[ppu]") {
   // Test various PPUCTRL register settings
   nesturbia::Cartridge cartridge;
-  nesturbia::Ppu ppu(cartridge, [](uint8, uint8, uint32_t) {});
+  nesturbia::Ppu ppu(cartridge);
 
   // Write directly to 0x2001
   ppu.WriteRegister(0x2001, 0xff);
@@ -66,7 +66,7 @@ TEST_CASE("Ppu_RegPpumask", "[ppu]") {
 TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
   // Test various PPUCTRL register settings
   nesturbia::Cartridge cartridge;
-  nesturbia::Ppu ppu(cartridge, [](uint8, uint8, uint32_t) {});
+  nesturbia::Ppu ppu(cartridge);
 
   ppu.status.latchedData = 0;
   ppu.status.spriteOverflow = false;
@@ -100,7 +100,7 @@ TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
 TEST_CASE("Ppu_ReadLatch", "[ppu]") {
   // Test that reading write-only registers produces the last value written
   nesturbia::Cartridge cartridge;
-  nesturbia::Ppu ppu(cartridge, [](uint8, uint8, uint32_t) {});
+  nesturbia::Ppu ppu(cartridge);
 
   ppu.WriteRegister(0x2000, 0xff);
   CHECK(ppu.ReadRegister(0x2000) == 0xff);
@@ -112,7 +112,7 @@ TEST_CASE("Ppu_ReadLatch", "[ppu]") {
 
 TEST_CASE("Ppu_OamWrite", "[ppu]") {
   nesturbia::Cartridge cartridge;
-  nesturbia::Ppu ppu(cartridge, [](uint8, uint8, uint32_t) {});
+  nesturbia::Ppu ppu(cartridge);
 
   ppu.oamaddr = 0x10;
 

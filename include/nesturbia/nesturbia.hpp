@@ -22,7 +22,6 @@ struct Nesturbia {
 
   std::array<uint8, 0x800> ram;
 
-  std::array<uint8, 256 * 240 * 3> pixels;
   bool isNewFrame;
 
   // Public functions
@@ -34,10 +33,6 @@ struct Nesturbia {
   uint8 cpuReadCallback(uint16 address);
   void cpuWriteCallback(uint16 address, uint8 value);
   void cpuTickCallback();
-
-  uint8 readChrCallback(uint16 address);
-  void writeChrCallback(uint16 address, uint8 value);
-  void setPixelCallback(uint8 x, uint8 y, uint32_t color);
 };
 
 } // namespace nesturbia

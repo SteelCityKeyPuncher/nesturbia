@@ -6,7 +6,7 @@ Nesturbia::Nesturbia()
     : cpu([this](uint16 address) { return cpuReadCallback(address); },
           [this](uint16 address, uint8 value) { cpuWriteCallback(address, value); },
           [this] { cpuTickCallback(); }),
-      ppu(cartridge, [this](uint8 x, uint8 y, uint32_t color) { setPixelCallback(x, y, color); }) {}
+      ppu(cartridge) {}
 
 bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   if (!cartridge.LoadRom(romData, romDataSize)) {
@@ -61,15 +61,6 @@ void Nesturbia::cpuTickCallback() {
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
-}
-
-void Nesturbia::setPixelCallback(uint8 x, uint8 y, uint32_t color) {
-  // TODO bounds check
-  uint8 *pixel = &pixels[(y * 256 + x) * 3];
-
-  *(pixel++) = (color >> 16) & 0xff;
-  *(pixel++) = (color >> 8) & 0xff;
-  *pixel++ = color & 0xff;
 }
 
 } // namespace nesturbia

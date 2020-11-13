@@ -1,6 +1,7 @@
 #ifndef NESTURBIA_PPU_HPP_INCLUDED
 #define NESTURBIA_PPU_HPP_INCLUDED
 
+#include <array>
 #include <functional>
 
 #include "nesturbia/cartridge.hpp"
@@ -9,6 +10,10 @@
 namespace nesturbia {
 
 struct Ppu {
+  // Constants
+  static inline constexpr auto kScreenWidth = 256U;
+  static inline constexpr auto kScreenHeight = 240U;
+
   // Types
   union addr_t {
     struct {
@@ -78,8 +83,6 @@ struct Ppu {
     }
   };
 
-  using set_pixel_callback_t = std::function<void(uint8, uint8, uint32_t)>;
-
   // Data
   // Cartridge reference
   Cartridge &cartridge;
@@ -107,10 +110,11 @@ struct Ppu {
   // OAM memory
   std::array<uint8, 0x100> oam;
 
-  set_pixel_callback_t setPixelCallback;
+  // Pixel memory
+  std::array<uint8, kScreenWidth * kScreenHeight * 3> pixels;
 
   // Public functions
-  Ppu(Cartridge &cartridge, set_pixel_callback_t setPixelCallback);
+  Ppu(Cartridge &cartridge);
 
   bool Tick();
   uint8 ReadRegister(uint16 address);
