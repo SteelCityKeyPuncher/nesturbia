@@ -98,30 +98,41 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     break;
 
   case 5:
+    // PPUSCROLL ($2005)
     if (!writeLatch) {
       // First write
+
+      // Coarse X is upper 5 bits
       vramAddrTemp.fields.coarseX = value >> 3;
-      // TODO fine X
+
+      // Fine X is lower 3 bits
+      fineX = value & 0x7;
     } else {
+      // Coarse Y is upper 5 bits
       vramAddrTemp.fields.coarseY = value >> 3;
+
+      // Fine Y is lower 3 bits
       vramAddrTemp.fields.fineY = value & 0x7;
     }
 
+    // Each write to this register (and PPUADDR/$2006) causes this flip-flop to switch
     writeLatch = !writeLatch;
     break;
 
   case 6:
+    // PPUADDR ($2006)
     if (!writeLatch) {
       // First write
-      vramAddrTemp.val &= 0xff;
-      vramAddrTemp.val |= ((value & 0x3f) << 8);
+      vramAddrTemp.value &= 0xff;
+      vramAddrTemp.value |= ((value & 0x3f) << 8);
     } else {
       // Second write
-      vramAddrTemp.val &= 0xff00;
-      vramAddrTemp.val |= value;
+      vramAddrTemp.value &= 0xff00;
+      vramAddrTemp.value |= value;
       vramAddr = vramAddrTemp;
     }
 
+    // Each write to this register (and PPUSCROLL/$2005) causes this flip-flop to switch
     writeLatch = !writeLatch;
     break;
 

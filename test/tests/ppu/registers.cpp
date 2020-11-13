@@ -7,6 +7,19 @@
 #include "nesturbia/ppu.hpp"
 using namespace nesturbia;
 
+TEST_CASE("Ppu_ReadLatch", "[ppu]") {
+  // Test that reading write-only registers produces the last value written
+  nesturbia::Cartridge cartridge;
+  nesturbia::Ppu ppu(cartridge);
+
+  ppu.WriteRegister(0x2000, 0xff);
+  CHECK(ppu.ReadRegister(0x2000) == 0xff);
+  CHECK(ppu.ReadRegister(0x2001) == 0xff);
+  CHECK(ppu.ReadRegister(0x2003) == 0xff);
+  CHECK(ppu.ReadRegister(0x2005) == 0xff);
+  CHECK(ppu.ReadRegister(0x2006) == 0xff);
+}
+
 TEST_CASE("Ppu_RegPpuctrl", "[ppu]") {
   // Test various PPUCTRL register settings
   nesturbia::Cartridge cartridge;
@@ -97,20 +110,7 @@ TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
   CHECK(ppu.ReadRegister(0x3ffa) == 0xfa);
 }
 
-TEST_CASE("Ppu_ReadLatch", "[ppu]") {
-  // Test that reading write-only registers produces the last value written
-  nesturbia::Cartridge cartridge;
-  nesturbia::Ppu ppu(cartridge);
-
-  ppu.WriteRegister(0x2000, 0xff);
-  CHECK(ppu.ReadRegister(0x2000) == 0xff);
-  CHECK(ppu.ReadRegister(0x2001) == 0xff);
-  CHECK(ppu.ReadRegister(0x2003) == 0xff);
-  CHECK(ppu.ReadRegister(0x2005) == 0xff);
-  CHECK(ppu.ReadRegister(0x2006) == 0xff);
-}
-
-TEST_CASE("Ppu_OamWrite", "[ppu]") {
+TEST_CASE("Ppu_RegOam", "[ppu]") {
   nesturbia::Cartridge cartridge;
   nesturbia::Ppu ppu(cartridge);
 
@@ -128,4 +128,33 @@ TEST_CASE("Ppu_OamWrite", "[ppu]") {
   CHECK(ppu.oam[0x11] == 0xbb);
   CHECK(ppu.oam[0x12] == 0xcc);
   CHECK(ppu.oamaddr == 0x13);
+}
+
+TEST_CASE("Ppu_Ppuscroll", "[ppu]") {
+  nesturbia::Cartridge cartridge;
+  nesturbia::Ppu ppu(cartridge);
+
+  ppu.writeLatch = false;
+
+  // First write (X)
+  ppu.WriteRegister(0x2005, 0xaa);
+
+  // Coarse X is the top 5 bits (0xaa >> 3 == 0x15)
+  CHECK(ppu.vramAddrTemp.fields.coarseX == 0x15);
+
+  // Fine X is the bottom 3 bits (0xaa & 0x7 == 0x2)
+  CHECK(ppu.fineX == 0x02);
+
+  // Writing should toggle the write flag and store the previous written value
+  CHECK(ppu.writeLatch == true);
+  CHECK(ppu.latchedValue == 0xaa);
+
+  // Now write (Y)
+  ppu.WriteRegister(0x2005, 0xbb);
+
+  // Coarse Y is the top 5 bits (0xbb >> 3 == 0x17)
+  CHECK(ppu.vramAddrTemp.fields.coarseY == 0x17);
+
+  // Fine X is the bottom 3 bits (0xbb & 0x7 == 0x3)
+  CHECK(ppu.vramAddrTemp.fields.fineY == 0x03);
 }

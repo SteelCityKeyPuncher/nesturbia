@@ -23,8 +23,8 @@ struct Ppu {
       unsigned fineY : 3;
     } fields;
 
-    unsigned val : 15;
-    unsigned addr : 14;
+    unsigned value : 15;
+    unsigned address : 14;
   };
 
   struct ppuctrl_t {
@@ -103,6 +103,8 @@ struct Ppu {
   // TODO initialize?
   addr_t vramAddr;
   addr_t vramAddrTemp;
+
+  uint8 fineX;
 
   // Nametable memory
   std::array<uint8, 0x800> vram;
