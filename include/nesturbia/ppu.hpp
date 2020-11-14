@@ -33,7 +33,7 @@ struct Ppu {
     uint16 spriteTableAddr;
     uint16 backgroundTableAddr;
     uint8 spriteHeight;
-    // TODO handle bit 6
+    // TODO handle bit 6?
     bool generateNmiAtVBlank;
 
     auto &operator=(uint8 value) {
@@ -83,6 +83,21 @@ struct Ppu {
     }
   };
 
+  // TODO temporary
+  struct render_data_t {
+    uint16 address;
+    uint8 nametableByte;
+    uint8 attributeByte;
+    uint8 bgL;
+    uint8 bgH;
+    uint16 bgShiftL;
+    uint16 bgShiftH;
+    uint8 atShiftL;
+    uint8 atShiftH;
+    bool atLatchL;
+    bool atLatchH;
+  };
+
   using nmi_callback_t = std::function<void(void)>;
 
   // Data
@@ -125,7 +140,12 @@ struct Ppu {
   // Pixel memory
   std::array<uint8, kScreenWidth * kScreenHeight * 3> pixels;
 
+  // Function that's called when an NMI is encountered
+  // This is called when VBLANK occurs, and the appropriate bit (7) is set in PPUCTRL
   nmi_callback_t nmiCallback;
+
+  // TODO temporary
+  render_data_t renderData;
 
   // Public functions
   Ppu(Cartridge &cartridge, nmi_callback_t nmiCallback);
@@ -134,6 +154,9 @@ struct Ppu {
   bool Tick();
   uint8 ReadRegister(uint16 address);
   void WriteRegister(uint16 address, uint8 value);
+
+  // Private functions
+  uint8 read(uint16 address);
 };
 
 } // namespace nesturbia

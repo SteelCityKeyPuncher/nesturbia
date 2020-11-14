@@ -56,52 +56,46 @@ bool Ppu::Tick() {
   // and ready to render
   bool updateFrame = false;
 
-  // TODO see if this next var can have a smaller scope
-  const auto isRendering = mask.showBackground || mask.showSprites;
-  const auto isVisibleScanline = scanline < 240;
-  const auto isPostRenderingScanline = scanline == 240;
-  const auto isNmiScanline = scanline == 241;
-  const auto isPreRenderingScanline = scanline == 261;
-
-  if (isVisibleScanline || isPreRenderingScanline) {
+  if (scanline < 240 || scanline == 261) {
     // Line 0-239 (visible) / 261 (pre-rendering)
     // TODO clear secondary OAM
 
-    if (isPreRenderingScanline && dot == 1) {
+    if (scanline == 261 && dot == 1) {
       // Clear PPUSTATUS flags when (scanline == 261 / dot == 1)
       status.spriteOverflow = false;
       status.sprite0Hit = false;
       status.vblankStarted = false;
     }
 
-    if (isVisibleScanline && dot >= 2 && dot <= 257) {
+    if (scanline < 240 && dot >= 2 && dot <= 257) {
       const uint8 x = dot - 2;
       uint8 paletteIndex = 0;
 
-      if (mask.showBackground) {
-        // PPUMASK has a bit that prevents rendering the background in the first 8 pixels
-        // If that bit isn't set, then don't render the background in those pixels
-        if (mask.showBackgroundInLeftmost8Px || x >= 8) {
-        }
-      }
+      if (mask.showBackground || mask.showSprites) {
+        if (mask.showBackground) {
+          // PPUMASK has a bit that prevents rendering the background in the first 8 pixels
+          // If that bit isn't set, then don't render the background in those pixels
+          if (mask.showBackgroundInLeftmost8Px || x >= 8) {
+            paletteIndex |= renderData.bgShiftH.bit(15 - fineX) << 1;
+            paletteIndex |= renderData.bgShiftL.bit(15 - fineX);
 
-      if (mask.showSprites) {
-        // PPUMASK has a bit that prevents rendering sprites in the first 8 pixels
-        // If that bit isn't set, then don't render sprites in those pixels
-        if (mask.showSpritesInLeftmost8Px || x >= 8) {
+            if (paletteIndex) {
+              paletteIndex |= renderData.atShiftH.bit(7 - fineX) << 3;
+              paletteIndex |= renderData.atShiftL.bit(7 - fineX) << 2;
+            }
+          }
         }
-      }
 
-      if (isRendering) {
-        // TODO use the right color
-        paletteIndex = 3;
-      } else {
-        // Not rendering - use the background color
-        paletteIndex = 0;
+        if (mask.showSprites) {
+          // PPUMASK has a bit that prevents rendering sprites in the first 8 pixels
+          // If that bit isn't set, then don't render sprites in those pixels
+          if (mask.showSpritesInLeftmost8Px || x >= 8) {
+          }
+        }
       }
 
       // TODO could make a common function since this logic exists in PPUDATA code
-      // TODO is this necessary?
+      // TODO is this necessary based on code above?
       paletteIndex &= 0x1f;
 
       // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
@@ -111,14 +105,113 @@ bool Ppu::Tick() {
 
       const auto rgb = kRgbTable[paletteRam[paletteIndex]];
       uint8 *pixel = &pixels[(scanline * 256 + x) * 3];
-      pixel[0] = rgb & 0xff;
+
+      pixel[0] = (rgb >> 16) & 0xff;
       pixel[1] = (rgb >> 8) & 0xff;
-      pixel[2] = (rgb >> 16) & 0xff;
+      pixel[2] = (rgb >> 0) & 0xff;
     }
-  } else if (isPostRenderingScanline && dot == 0) {
+
+    if ((dot >= 2 && dot <= 255) || (dot >= 322 && dot <= 337)) {
+      renderData.bgShiftL <<= 1;
+      renderData.bgShiftH <<= 1;
+      renderData.atShiftL = (renderData.atShiftL << 1) | renderData.atLatchL;
+      renderData.atShiftH = (renderData.atShiftH << 1) | renderData.atLatchH;
+
+      switch (dot % 8) {
+      case 1:
+        renderData.address = 0x2000 | (vramAddr.value & 0xfff);
+        renderData.bgShiftL = (renderData.bgShiftL & 0xff00) | renderData.bgL;
+        renderData.bgShiftH = (renderData.bgShiftH & 0xff00) | renderData.bgH;
+
+        renderData.atLatchL = renderData.attributeByte.bit(0);
+        renderData.atLatchH = renderData.attributeByte.bit(1);
+        break;
+
+      case 2:
+        renderData.nametableByte = read(renderData.address);
+        break;
+
+      case 3:
+        renderData.address = 0x23c0;
+        renderData.address |= vramAddr.fields.nametable << 10;
+        renderData.address |= (vramAddr.fields.coarseY >> 2) << 3;
+        renderData.address |= (vramAddr.fields.coarseX >> 2);
+        break;
+
+      case 4:
+        renderData.attributeByte = read(renderData.address);
+        renderData.attributeByte >>= vramAddr.fields.coarseY & 0x2 ? 4 : 0;
+        renderData.attributeByte >>= vramAddr.fields.coarseX & 0x2 ? 2 : 0;
+        break;
+
+      case 5:
+        renderData.address =
+            ctrl.backgroundTableAddr + (renderData.nametableByte << 4) + vramAddr.fields.fineY;
+        break;
+
+      case 6:
+        renderData.bgL = read(renderData.address);
+        break;
+
+      case 7:
+        renderData.address += 8;
+        break;
+
+      case 0:
+        renderData.bgH = read(renderData.address);
+
+        if (mask.showBackground || mask.showSprites) {
+          if (vramAddr.fields.coarseX == 31) {
+            vramAddr.value ^= 0x41f;
+          } else {
+            vramAddr.fields.coarseX++;
+          }
+        }
+        break;
+      }
+    } else if (dot == 256) {
+      renderData.bgH = read(renderData.address);
+
+      if (mask.showBackground || mask.showSprites) {
+        if (++vramAddr.fields.fineY == 0x0) {
+          if (vramAddr.fields.coarseY == 0x1f) {
+            vramAddr.fields.coarseY = 0;
+          } else if (vramAddr.fields.coarseY == 0x1d) {
+            vramAddr.fields.coarseY = 0;
+            vramAddr.fields.nametable ^= 0x2;
+          } else {
+            ++vramAddr.fields.coarseY;
+          }
+        }
+      }
+    } else if (dot == 257) {
+      renderData.atLatchL = renderData.attributeByte.bit(0);
+      renderData.atLatchH = renderData.attributeByte.bit(1);
+
+      if (mask.showBackground || mask.showSprites) {
+        vramAddr.fields.coarseX = vramAddrLatch.fields.coarseX;
+
+        vramAddr.fields.nametable &= 0x2;
+        vramAddr.fields.nametable |= vramAddrLatch.fields.nametable & 0x1;
+      }
+    } else if (dot >= 280 && dot <= 304) {
+      if (scanline == 261 && (mask.showBackground || mask.showSprites)) {
+        vramAddr.fields.coarseY = vramAddrLatch.fields.coarseY;
+
+        vramAddr.fields.nametable &= 0x1;
+        vramAddr.fields.nametable |= vramAddrLatch.fields.nametable & 0x2;
+
+        vramAddr.fields.fineY = vramAddrLatch.fields.fineY;
+      }
+    } else if (dot == 1 || dot == 321 || dot == 339) {
+      renderData.address = 0x2000 | (vramAddr.value & 0xfff);
+    } else if (dot == 338 || dot == 340) {
+      renderData.nametableByte = read(renderData.address);
+    }
+  } else if (scanline == 240 && dot == 0) {
     // Line 240: The frame is considered ready for the frontend on dot 0
     updateFrame = true;
-  } else if (isNmiScanline && dot == 1) {
+  } else if (scanline == 241 && dot == 1) {
     // Line 241: Set NMI on dot 1
     // Set VBLANK (bit 7) in PPUSTATUS ($2002)
     status.vblankStarted = true;
@@ -130,11 +223,15 @@ bool Ppu::Tick() {
   }
 
   // Increment the counters for the current dot + scanline
-  if (++dot > 340) {
-    // Don't simply set the dot to zero
-    // This is because the first dot is skipped for odd frames in some cases above
-    dot -= 341;
-    if (++scanline > 261) {
+  if (++dot == 341) {
+    dot = 0;
+
+    if (++scanline == 262) {
+      // Odd frames skip the first dot on the first scanline if currently rendering
+      if ((mask.showBackground || mask.showSprites) && isOddFrame) {
+        ++dot;
+      }
+
       scanline = 0;
       isOddFrame = !isOddFrame;
     }
@@ -162,31 +259,17 @@ uint8 Ppu::ReadRegister(uint16 address) {
 
   case 7:
     // PPUDATA ($2007)
-    if (vramAddr.address < 0x2000) {
-      // Read mapper CHR-ROM/RAM
-      // The first read returns the value from the internal buffer
+    // Palette memory ($3f00-$3eff) is internal to the PPU so it can be read in one cycle
+    // All other memory read from the PPU must be buffered, taking two cycles to read
+    if (vramAddr.address < 0x3f00) {
+      // The returned value is from the internal buffer
       latchedValue = readBuffer;
 
-      // The internal buffer is then populated with the desired value
-      readBuffer = cartridge.ReadChr(vramAddr.address);
-    } else if (vramAddr.address < 0x3f00) {
-      // Nametable RAM
-      // The first read returns the value from the internal buffer
-      latchedValue = readBuffer;
-
-      // The internal buffer is then populated with the desired value
-      readBuffer = vram[nametableMap(cartridge.GetMirrorType(), vramAddr.address)];
+      // Store the actual value in the buffer for the next read
+      readBuffer = read(vramAddr.address);
     } else {
-      // Palette memory ($3f00-$3eff)
-      // $3f00-$3f1f are mirrored up to $3fff
-      auto paletteAddr = vramAddr.address & 0x1f;
-
-      // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
-      if ((paletteAddr & 0x13) == 0x10) {
-        paletteAddr &= ~0x10;
-      }
-
-      latchedValue = paletteRam[paletteAddr];
+      // The palette memory can be returned immediately without being buffered
+      latchedValue = read(vramAddr.address);
     }
 
     vramAddr.address += ctrl.addressIncrement;
@@ -295,6 +378,32 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     vramAddr.address += ctrl.addressIncrement;
     break;
   }
+}
+
+// TODO put in anonymous namespace?
+uint8 Ppu::read(uint16 address) {
+  assert(address < 0x4000);
+
+  if (address < 0x2000) {
+    // Read mapper CHR-ROM/RAM
+    return cartridge.ReadChr(address);
+  }
+
+  if (address < 0x3f00) {
+    // Nametable RAM
+    return vram[nametableMap(cartridge.GetMirrorType(), address)];
+  }
+
+  // Palette memory ($3f00-$3eff)
+  // $3f00-$3f1f are mirrored up to $3fff
+  auto paletteAddr = address & 0x1f;
+
+  // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
+  if ((paletteAddr & 0x13) == 0x10) {
+    paletteAddr &= ~0x10;
+  }
+
+  return paletteRam[paletteAddr];
 }
 
 namespace {

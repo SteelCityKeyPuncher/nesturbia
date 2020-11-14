@@ -68,3 +68,55 @@ TEST_CASE("Ppu_TimingVBlank", "[ppu]") {
   CHECK(statusClearedScanline == 261);
   CHECK(statusClearedDot == 1);
 }
+
+TEST_CASE("Ppu_TimingOddFrame_RenderingEnabled", "[ppu]") {
+  // Test that "odd frames" skip the first tick when rendering is enabled
+  Cartridge cartridge;
+  Ppu ppu(cartridge, [] {});
+
+  // Enable rendering (only one of these is necessary)
+  ppu.mask.showBackground = true;
+  ppu.mask.showSprites = true;
+
+  // Run the even frame
+  for (int i = 0; i < 262 * 341; i++) {
+    static_cast<void>(ppu.Tick());
+  }
+
+  CHECK(ppu.scanline == 0);
+  CHECK(ppu.dot == 0);
+
+  // Run the odd frame
+  for (int i = 0; i < 262 * 341; i++) {
+    static_cast<void>(ppu.Tick());
+  }
+
+  CHECK(ppu.scanline == 0);
+  CHECK(ppu.dot == 1);
+}
+
+TEST_CASE("Ppu_TimingOddFrame_RenderingDisabled", "[ppu]") {
+  // Test that "odd frames" _don't_ skip the first tick when rendering is disabled
+  Cartridge cartridge;
+  Ppu ppu(cartridge, [] {});
+
+  // Disable rendering (these should be false on "power up" anyway)
+  ppu.mask.showBackground = false;
+  ppu.mask.showSprites = false;
+
+  // Run the even frame
+  for (int i = 0; i < 262 * 341; i++) {
+    static_cast<void>(ppu.Tick());
+  }
+
+  CHECK(ppu.scanline == 0);
+  CHECK(ppu.dot == 0);
+
+  // Run the odd frame
+  for (int i = 0; i < 262 * 341; i++) {
+    static_cast<void>(ppu.Tick());
+  }
+
+  CHECK(ppu.scanline == 0);
+  CHECK(ppu.dot == 0);
+}
