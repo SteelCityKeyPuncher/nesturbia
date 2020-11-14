@@ -50,10 +50,13 @@ struct Cpu {
 
   uint32_t cycles;
 
+  bool nmi;
+
   // Public functions
   Cpu(read_callback_t readCallback, write_callback_t writeCallback, tick_callback_t tickCallback);
 
   void Power();
+  void NMI();
 
   // Private functions
   uint8 read(uint16 address);

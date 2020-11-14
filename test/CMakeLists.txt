@@ -56,10 +56,13 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/instructions/txs.cpp
   tests/cpu/instructions/tya.cpp
   tests/cpu/memory.cpp
+  tests/cpu/nmi.cpp
   tests/cpu/power.cpp
   tests/mappers/mapper0.cpp
   tests/nesturbia/memory.cpp
+  tests/ppu/power.cpp
   tests/ppu/registers.cpp
+  tests/ppu/timing.cpp
 )
 
 set_target_properties(${PROJECT_NAME}-test PROPERTIES CXX_STANDARD 17)

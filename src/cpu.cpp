@@ -24,7 +24,11 @@ void Cpu::Power() {
   P = 0x4;
 
   cycles = 7;
+
+  nmi = false;
 }
+
+void Cpu::NMI() { nmi = true; }
 
 uint8 Cpu::read(uint16 address) {
   tick();
@@ -72,6 +76,19 @@ void Cpu::tick() {
 }
 
 void Cpu::executeInstruction() {
+  if (nmi) {
+    nmi = false;
+    push16(PC);
+    push(P | 0x20);
+    PC = read16(0xfffa);
+    P.I = true;
+    tick();
+    tick();
+    return;
+  }
+
+  // TODO IRQ
+
   const auto opcode = read(PC++);
   instructions[opcode](*this);
 }
@@ -236,7 +253,7 @@ static void op_bpl(Cpu &cpu) { branch(cpu, !cpu.P.N); }
 static void op_brk(Cpu &cpu) {
   ++cpu.PC;
   cpu.push16(cpu.PC);
-  cpu.push(cpu.P | 0x10);
+  cpu.push(cpu.P | 0x30);
   cpu.PC = cpu.read16(0xfffe);
   cpu.P.I = true;
   cpu.tick();

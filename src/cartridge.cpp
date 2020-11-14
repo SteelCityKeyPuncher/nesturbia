@@ -11,6 +11,14 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
   return true;
 }
 
+Mapper::mirror_t Cartridge::GetMirrorType() const {
+  if (mapper) {
+    return mapper->GetMirrorType();
+  }
+
+  return Mapper::mirror_t::horizontal;
+}
+
 uint8 Cartridge::Read(uint16 address) {
   if (mapper) {
     return mapper->Read(address);

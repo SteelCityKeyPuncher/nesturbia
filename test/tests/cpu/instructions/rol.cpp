@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/cpu.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_ROL_zpg", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
@@ -11,7 +12,7 @@ TEST_CASE("Cpu_Instructions_ROL_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ROL: [0xab](0xff) ROL 1, C(0) = 0xfe
   memory[0x00] = 0x26;
@@ -74,7 +75,7 @@ TEST_CASE("Cpu_Instructions_ROL_acc", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ROL: A(0xff) ROL 1, C(1) = 0xff
   memory[0x00] = 0x2a;
@@ -99,7 +100,7 @@ TEST_CASE("Cpu_Instructions_ROL_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ROL: [0xbeef](0x2e) ROL 1, C(1) = 0x5d
   memory[0x00] = 0x2e;
@@ -127,7 +128,7 @@ TEST_CASE("Cpu_Instructions_ROL_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ROL: [0xab + X(3)](0x2e) ROL 1, C(1) = 0x5d
   memory[0x00] = 0x36;
@@ -155,7 +156,7 @@ TEST_CASE("Cpu_Instructions_ROL_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ROL: [0xbeef + X(3)](0x2e) ROL 1, C(1) = 0x5d
   memory[0x00] = 0x3e;

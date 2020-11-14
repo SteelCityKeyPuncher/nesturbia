@@ -17,6 +17,8 @@ struct Mapper0 : public Mapper {
   static Mapper::ptr_t Create(const std::vector<uint8> &prgRom, const std::vector<uint8> &chrRom,
                               mirror_t mirrorType);
 
+  [[nodiscard]] mirror_t GetMirrorType() const override;
+
   uint8 Read(uint16 address) override;
   void Write(uint16 address, uint8 value) override;
 

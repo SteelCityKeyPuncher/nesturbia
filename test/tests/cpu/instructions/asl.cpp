@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/cpu.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_ASL_zpg", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
@@ -11,7 +12,7 @@ TEST_CASE("Cpu_Instructions_ASL_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ASL: [0xab](0xff) <<= 1 = 0xfe
   memory[0x00] = 0x06;
@@ -65,7 +66,7 @@ TEST_CASE("Cpu_Instructions_ASL_acc", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ASL: A(0xff) <<= 1 = 0xfe
   memory[0x00] = 0x0a;
@@ -89,7 +90,7 @@ TEST_CASE("Cpu_Instructions_ASL_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ASL: [0xbeef](0x2e) <<= 1 = 0x5c
   memory[0x00] = 0x0e;
@@ -114,7 +115,7 @@ TEST_CASE("Cpu_Instructions_ASL_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ASL: [0xab + X(3)](0x2e) <<= 1 = 0x5c
   memory[0x00] = 0x16;
@@ -141,7 +142,7 @@ TEST_CASE("Cpu_Instructions_ASL_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ASL: [0xbeef + X(3)](0x2e) <<= 1 = 0x5c
   memory[0x00] = 0x1e;

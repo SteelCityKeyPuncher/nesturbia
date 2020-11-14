@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/cpu.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Cpu_Memory", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
@@ -11,7 +12,7 @@ TEST_CASE("Cpu_Memory", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // This memory is initialized to zero, so read a random address to verify this
   CHECK(read(0xffff) == 0);

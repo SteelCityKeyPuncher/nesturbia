@@ -7,11 +7,12 @@
 
 TEST_CASE("Cpu_Instructions_PLA", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
+  using namespace nesturbia;
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // PLA
   memory[0x00] = 0x68;

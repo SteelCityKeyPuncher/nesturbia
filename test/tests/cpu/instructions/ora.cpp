@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/cpu.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_ORA_inx", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
@@ -11,7 +12,7 @@ TEST_CASE("Cpu_Instructions_ORA_inx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0xaa) | [0xbeef](0x55) = 0xff
   memory[0x00] = 0x01;
@@ -80,7 +81,7 @@ TEST_CASE("Cpu_Instructions_ORA_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0x0a) | [0xab](0xa0) = 0xaa
   memory[0x00] = 0x05;
@@ -106,7 +107,7 @@ TEST_CASE("Cpu_Instructions_ORA_imm", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0x0a) | imm(0xa0) = 0xaa
   memory[0x00] = 0x09;
@@ -130,7 +131,7 @@ TEST_CASE("Cpu_Instructions_ORA_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0x55) | [0xbeef](0xaa) = 0xff
   memory[0x00] = 0x0d;
@@ -157,7 +158,7 @@ TEST_CASE("Cpu_Instructions_ORA_iny", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0xb0) | [0xbeef + Y(0)](0x0b) = 0xbb
   memory[0x00] = 0x11;
@@ -208,7 +209,7 @@ TEST_CASE("Cpu_Instructions_ORA_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0xb0) | [0xab + X(3)](0x0b) = 0xbb
   memory[0x00] = 0x15;
@@ -235,7 +236,7 @@ TEST_CASE("Cpu_Instructions_ORA_aby", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0xf0) | [0xbeef + Y(3)](0x01) = 0xf1
   memory[0x00] = 0x19;
@@ -283,7 +284,7 @@ TEST_CASE("Cpu_Instructions_ORA_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // ORA: A(0xf0) | [0xbeef + X(3)](0x0f) = 0xff
   memory[0x00] = 0x1d;

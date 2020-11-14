@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/mapper.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Nesturbia_Mapper0_Valid", "[mapper]") {
   std::array<uint8_t, 0xa010> rom;
@@ -18,13 +19,13 @@ TEST_CASE("Nesturbia_Mapper0_Valid", "[mapper]") {
   // CHR-ROM: 1 * 8K
   rom[5] = 1;
 
-  auto mapper = nesturbia::Mapper::Create(rom.data(), 16 + 0x4000 + 0x2000);
+  auto mapper = Mapper::Create(rom.data(), 16 + 0x4000 + 0x2000);
   CHECK(mapper != nullptr);
 
   // Change PRG-ROM to: 2 * 16K
   rom[4] = 2;
 
-  mapper = nesturbia::Mapper::Create(rom.data(), rom.size());
+  mapper = Mapper::Create(rom.data(), rom.size());
   CHECK(mapper != nullptr);
 }
 
@@ -41,7 +42,7 @@ TEST_CASE("Nesturbia_Mapper0_InvalidPRGSize", "[mapper]") {
   // CHR-ROM: 1 * 8K
   rom[5] = 1;
 
-  auto mapper = nesturbia::Mapper::Create(rom.data(), rom.size());
+  auto mapper = Mapper::Create(rom.data(), rom.size());
   CHECK(mapper == nullptr);
 }
 
@@ -58,7 +59,7 @@ TEST_CASE("Nesturbia_Mapper0_InvalidCHRSize", "[mapper]") {
   // CHR-ROM: 3 * 8K
   rom[5] = 3;
 
-  auto mapper = nesturbia::Mapper::Create(rom.data(), rom.size());
+  auto mapper = Mapper::Create(rom.data(), rom.size());
   CHECK(mapper == nullptr);
 }
 
@@ -77,10 +78,10 @@ TEST_CASE("Nesturbia_Mapper0_InvalidROMSize", "[mapper]") {
   rom[5] = 1;
 
   // Too small
-  auto mapper = nesturbia::Mapper::Create(rom.data(), 0x100);
+  auto mapper = Mapper::Create(rom.data(), 0x100);
   CHECK(mapper == nullptr);
 
   // Too big
-  mapper = nesturbia::Mapper::Create(rom.data(), 0x10000);
+  mapper = Mapper::Create(rom.data(), 0x10000);
   CHECK(mapper == nullptr);
 }

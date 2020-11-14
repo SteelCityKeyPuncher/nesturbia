@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/cpu.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_CMP_inx", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
@@ -11,7 +12,7 @@ TEST_CASE("Cpu_Instructions_CMP_inx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x00) - [0xbeef](0x01) = 0xff
   memory[0x00] = 0xc1;
@@ -40,7 +41,7 @@ TEST_CASE("Cpu_Instructions_CMP_zpg", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0xaa) - [0xab](0xaa) = 0x00
   memory[0x00] = 0xc5;
@@ -66,7 +67,7 @@ TEST_CASE("Cpu_Instructions_CMP_imm", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x04) - imm(0x03) = 0x28
   memory[0x00] = 0xc9;
@@ -90,7 +91,7 @@ TEST_CASE("Cpu_Instructions_CMP_abs", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x00) - [0xbeef](0x01) = 0xff
   memory[0x00] = 0xcd;
@@ -117,7 +118,7 @@ TEST_CASE("Cpu_Instructions_CMP_iny", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x00) - [0xbeef + Y(0)](0x01) = 0xff
   memory[0x00] = 0xd1;
@@ -168,7 +169,7 @@ TEST_CASE("Cpu_Instructions_CMP_zpx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x00) - [0xab + X(3)](0x01) = 0xff
   memory[0x00] = 0xd5;
@@ -195,7 +196,7 @@ TEST_CASE("Cpu_Instructions_CMP_aby", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x00) - [0xbeef + Y(3)](0x01) = 0xff
   memory[0x00] = 0xd9;
@@ -243,7 +244,7 @@ TEST_CASE("Cpu_Instructions_CMP_abx", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // CMP: A(0x00) - [0xbeef + X(3)](0x01) = 0xff
   memory[0x00] = 0xdd;

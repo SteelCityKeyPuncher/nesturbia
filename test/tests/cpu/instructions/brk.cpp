@@ -4,6 +4,7 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/cpu.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_BRK", "[cpu]") {
   std::array<uint8_t, 0x10000> memory;
@@ -11,7 +12,7 @@ TEST_CASE("Cpu_Instructions_BRK", "[cpu]") {
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
 
-  nesturbia::Cpu cpu(read, write, [] {});
+  Cpu cpu(read, write, [] {});
 
   // BRK
   memory[0x00] = 0x00;
@@ -28,7 +29,7 @@ TEST_CASE("Cpu_Instructions_BRK", "[cpu]") {
   CHECK(cpu.S == 0xfa);
   CHECK(memory.at(0x1fd) == 0x00);
   CHECK(memory.at(0x1fc) == 0x02);
-  CHECK(memory.at(0x1fb) == 0x14);
+  CHECK(memory.at(0x1fb) == 0x34);
   CHECK(cpu.P.I == true);
   CHECK(cpu.PC == 0xbeef);
   CHECK(cpu.cycles == 7 + 7);

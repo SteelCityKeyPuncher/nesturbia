@@ -5,38 +5,133 @@
 
 namespace nesturbia {
 
-Ppu::Ppu(Cartridge &cartridge) : cartridge(cartridge) {}
+namespace {
+
+constexpr std::array<uint32_t, 64> kRgbTable = {
+    0x7c7c7c, 0x0000fc, 0x0000bc, 0x4428bc, 0x940084, 0xa80020, 0xa81000, 0x881400,
+    0x503000, 0x007800, 0x006800, 0x005800, 0x004058, 0x000000, 0x000000, 0x000000,
+    0xbcbcbc, 0x0078f8, 0x0058f8, 0x6844fc, 0xd800cc, 0xe40058, 0xf83800, 0xe45c10,
+    0xac7c00, 0x00b800, 0x00a800, 0x00a844, 0x008888, 0x000000, 0x000000, 0x000000,
+    0xf8f8f8, 0x3cbcfc, 0x6888fc, 0x9878f8, 0xf878f8, 0xf85898, 0xf87858, 0xfca044,
+    0xf8b800, 0xb8f818, 0x58d854, 0x58f898, 0x00e8d8, 0x787878, 0x000000, 0x000000,
+    0xfcfcfc, 0xa4e4fc, 0xb8b8f8, 0xd8b8f8, 0xf8b8f8, 0xf8a4c0, 0xf0d0b0, 0xfce0a8,
+    0xf8d878, 0xd8f878, 0xb8f8b8, 0xb8f8d8, 0x00fcfc, 0xf8d8f8, 0x000000, 0x000000};
+
+uint16 nametableMap(Mapper::mirror_t mirrorType, uint16 address);
+
+} // namespace
+
+Ppu::Ppu(Cartridge &cartridge, nmi_callback_t nmiCallback)
+    : cartridge(cartridge), nmiCallback(std::move(nmiCallback)) {
+  Power();
+}
+
+void Ppu::Power() {
+  ctrl = 0;
+  mask = 0;
+
+  status.latchedData = 0;
+  status.spriteOverflow = true;
+  status.sprite0Hit = false;
+  status.vblankStarted = true;
+
+  oamaddr = 0;
+
+  scanline = 0;
+  dot = 0;
+  isOddFrame = false;
+
+  addressWriteLatch = false;
+  latchedValue = 0;
+  readBuffer = 0;
+
+  vramAddr.value = 0;
+  vramAddrLatch.value = 0;
+
+  fineX = 0;
+}
 
 bool Ppu::Tick() {
-  // TODO
-  if (scanline == 240 && dot == 0) {
-    static uint32_t z = 0;
-    for (uint16_t xx = 0; xx < 256; xx++) {
-      for (uint16_t yy = 0; yy < 240; yy++) {
-        // TODO bounds check
-        uint8 *pixel = &pixels[(yy * 256 + xx) * 3];
+  bool updateFrame = false;
 
-        *(pixel++) = 0;
-        *(pixel++) = 0;
-        *pixel++ = z;
-        z += rand();
-      }
+  if (scanline <= 239 || scanline == 261) {
+    // In the rendering (scanline == 0-239) or pre-rendering (scanline == 261) stage
+    if (scanline == 261 && dot == 1) {
+      // TODO clear secondary OAM
+
+      // Clear PPUSTATUS flags
+      status.spriteOverflow = false;
+      status.sprite0Hit = false;
+      status.vblankStarted = false;
     }
 
-    // Return true so that the PPU pixels are written to the screen
-    return true;
+    if (scanline < 240 && dot >= 2 && dot <= 257) {
+      const uint8 x = dot - 2;
+      uint8 paletteIndex = 0;
+
+      if (mask.showBackground) {
+        if (mask.showBackgroundInLeftmost8Px || x >= 8) {
+          // TODO
+        }
+      }
+
+      if (mask.showSprites) {
+        if (mask.showSpritesInLeftmost8Px || x >= 8) {
+          // TODO
+        }
+      }
+
+      if (mask.showBackground || mask.showSprites) {
+        // TODO use the right color
+        paletteIndex = 3;
+      } else {
+        // Not rendering - use the background color
+        paletteIndex = 0;
+      }
+
+      // TODO could make a common function since this logic exists in PPUDATA code
+      // TODO is this necessary?
+      paletteIndex &= 0x1f;
+
+      // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
+      if ((paletteIndex & 0x13) == 0x10) {
+        paletteIndex &= ~0x10;
+      }
+
+      const auto rgb = kRgbTable[paletteRam[paletteIndex]];
+      uint8 *pixel = &pixels[(scanline * 256 + x) * 3];
+      pixel[0] = rgb & 0xff;
+      pixel[1] = (rgb >> 8) & 0xff;
+      pixel[2] = (rgb >> 16) & 0xff;
+    }
+  } else if (scanline == 240) {
+    // Post-rendering line
+    // On dot 0 of this scanline, the frame is updated
+    updateFrame = (dot == 0);
+  } else if (scanline == 241) {
+    // NMI line
+    if (dot == 1) {
+      // Set VBLANK (bit 7) in PPUSTATUS ($2002)
+      status.vblankStarted = true;
+
+      // If PPUCTRL has the bit set to trigger an NMI on the CPU, do so now
+      if (ctrl.generateNmiAtVBlank && nmiCallback) {
+        nmiCallback();
+      }
+    }
   }
 
-  if (++dot == 341) {
-    dot = 0;
+  if (++dot >= 341) {
+    // Don't simply set to zero
+    // This is because the first dot is skipped for odd frames in some cases above
+    dot -= 341;
     if (++scanline == 262) {
       scanline = 0;
       isOddFrame = !isOddFrame;
     }
   }
 
-  // Not yet ready to update the screen
-  return false;
+  return updateFrame;
 }
 
 uint8 Ppu::ReadRegister(uint16 address) {
@@ -48,16 +143,44 @@ uint8 Ppu::ReadRegister(uint16 address) {
     status.latchedData = latchedValue & 0x1f;
     latchedValue = status;
 
-    // Reading this register clears the write latch
-    writeLatch = false;
+    // Reading this register clears the address write latch
+    addressWriteLatch = false;
     break;
 
   case 4:
-    // TODO read OAM
+    latchedValue = oam[oamaddr];
     break;
 
   case 7:
-    // TODO PPUDATA
+    // PPUDATA ($2007)
+    if (vramAddr.address < 0x2000) {
+      // Read mapper CHR-ROM/RAM
+      // The first read returns the value from the internal buffer
+      latchedValue = readBuffer;
+
+      // The internal buffer is then populated with the desired value
+      readBuffer = cartridge.ReadChr(vramAddr.address);
+    } else if (vramAddr.address < 0x3f00) {
+      // Nametable RAM
+      // The first read returns the value from the internal buffer
+      latchedValue = readBuffer;
+
+      // The internal buffer is then populated with the desired value
+      readBuffer = vram[nametableMap(cartridge.GetMirrorType(), vramAddr.address)];
+    } else {
+      // Palette memory ($3f00-$3eff)
+      // $3f00-$3f1f are mirrored up to $3fff
+      auto paletteAddr = vramAddr.address & 0x1f;
+
+      // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
+      if ((paletteAddr & 0x13) == 0x10) {
+        paletteAddr &= ~0x10;
+      }
+
+      latchedValue = paletteRam[paletteAddr];
+    }
+
+    vramAddr.address += ctrl.addressIncrement;
     break;
 
   default:
@@ -78,7 +201,7 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
   switch (address & 0x7) {
   case 0:
     ctrl = value;
-    vramAddrTemp.fields.nametable = ctrl.nametable;
+    vramAddrLatch.fields.nametable = ctrl.nametable;
     break;
 
   case 1:
@@ -86,7 +209,8 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     break;
 
   case 2:
-    // PPUSTATUS is read-only (nothing to do here)
+    // PPUSTATUS is read-only
+    // Nothing to do here
     break;
 
   case 3:
@@ -99,80 +223,85 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
 
   case 5:
     // PPUSCROLL ($2005)
-    if (!writeLatch) {
+    if (!addressWriteLatch) {
       // First write
-
       // Coarse X is upper 5 bits
-      vramAddrTemp.fields.coarseX = value >> 3;
+      vramAddrLatch.fields.coarseX = value >> 3;
 
       // Fine X is lower 3 bits
       fineX = value & 0x7;
     } else {
+      // Second write
       // Coarse Y is upper 5 bits
-      vramAddrTemp.fields.coarseY = value >> 3;
+      vramAddrLatch.fields.coarseY = value >> 3;
 
       // Fine Y is lower 3 bits
-      vramAddrTemp.fields.fineY = value & 0x7;
+      vramAddrLatch.fields.fineY = value & 0x7;
     }
 
-    // Each write to this register (and PPUADDR/$2006) causes this flip-flop to switch
-    writeLatch = !writeLatch;
+    // Each write to this register (and PPUADDR/$2006) causes this flip-flop to toggle
+    addressWriteLatch = !addressWriteLatch;
     break;
 
   case 6:
     // PPUADDR ($2006)
-    if (!writeLatch) {
+    if (!addressWriteLatch) {
       // First write
-      vramAddrTemp.value &= 0xff;
-      vramAddrTemp.value |= ((value & 0x3f) << 8);
+      vramAddrLatch.value &= 0xff;
+      vramAddrLatch.value |= ((value & 0x3f) << 8);
     } else {
       // Second write
-      vramAddrTemp.value &= 0xff00;
-      vramAddrTemp.value |= value;
-      vramAddr = vramAddrTemp;
+      vramAddrLatch.value &= 0xff00;
+      vramAddrLatch.value |= value;
+      vramAddr = vramAddrLatch;
     }
 
-    // Each write to this register (and PPUSCROLL/$2005) causes this flip-flop to switch
-    writeLatch = !writeLatch;
+    // Each write to this register (and PPUSCROLL/$2005) causes this flip-flop to toggle
+    addressWriteLatch = !addressWriteLatch;
     break;
 
   case 7:
   default:
-    // TODO PPUDATA
+    // PPUDATA ($2007)
+    if (vramAddr.address < 0x2000) {
+      // Write mapper CHR-ROM/RAM
+      cartridge.WriteChr(vramAddr.address, value);
+    } else if (vramAddr.address < 0x3f00) {
+      // Nametable RAM
+      vram[nametableMap(cartridge.GetMirrorType(), vramAddr.address)] = value;
+    } else {
+      // Palette memory ($3f00-$3eff)
+      // $3f00-$3f1f are mirrored up to $3fff
+      auto paletteAddr = vramAddr.address & 0x1f;
+
+      // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
+      if ((paletteAddr & 0x13) == 0x10) {
+        paletteAddr &= ~0x10;
+      }
+
+      // Only 6-bit values should be here since reading the top 2 bits should return 0
+      paletteRam[paletteAddr] = value & 0x3f;
+    }
+
+    vramAddr.address += ctrl.addressIncrement;
     break;
   }
 }
 
-uint8 Ppu::read(uint16 address) {
-  if (address < 0x2000) {
-    // Read mapper CHR-ROM/RAM
-    return cartridge.ReadChr(address);
-  }
+namespace {
 
-  if (address < 0x3f00) {
-    return 0;
-  }
+uint16 nametableMap(Mapper::mirror_t mirrorType, uint16 address) {
+  switch (mirrorType) {
+  case Mapper::mirror_t::horizontal:
+    // Horizontal mapping ties bit A11 to A10
+    return ((address >> 1) & 0x400) | (address & 0x3ff);
 
-  if (address < 0x4000) {
-    return 0;
-  }
-
-  return 0;
-}
-
-void Ppu::write(uint16 address, uint8 value) {
-  if (address < 0x2000) {
-    // Write mapper CHR-ROM/RAM
-    return cartridge.WriteChr(address, value);
-  }
-
-  if (address < 0x3f00) {
-    return;
-  }
-
-  if (address < 0x4000) {
-    return;
+  case Mapper::mirror_t::vertical:
+  default:
+    return address & 0x7ff;
   }
 }
+
+} // namespace
 
 } // namespace nesturbia

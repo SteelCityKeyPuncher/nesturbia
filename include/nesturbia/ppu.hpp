@@ -49,7 +49,7 @@ struct Ppu {
   };
 
   struct ppumask_t {
-    bool greyscale;
+    bool grayscale;
     bool showBackgroundInLeftmost8Px;
     bool showSpritesInLeftmost8Px;
     bool showBackground;
@@ -59,7 +59,7 @@ struct Ppu {
     bool emphasizeBlue;
 
     auto &operator=(uint8 value) {
-      greyscale = value.bit(0);
+      grayscale = value.bit(0);
       showBackgroundInLeftmost8Px = value.bit(1);
       showSpritesInLeftmost8Px = value.bit(2);
       showSprites = value.bit(3);
@@ -83,6 +83,8 @@ struct Ppu {
     }
   };
 
+  using nmi_callback_t = std::function<void(void)>;
+
   // Data
   // Cartridge reference
   Cartridge &cartridge;
@@ -97,12 +99,17 @@ struct Ppu {
   uint16 dot;
   bool isOddFrame;
 
-  bool writeLatch;
-  uint8 latchedValue;
+  bool addressWriteLatch;
 
-  // TODO initialize?
+  // TODO rename
+  uint8 latchedValue;
+  uint8 readBuffer;
+
+  // The actual VRAM address (V)
   addr_t vramAddr;
-  addr_t vramAddrTemp;
+
+  // The VRAM address latch (T)
+  addr_t vramAddrLatch;
 
   uint8 fineX;
 
@@ -112,19 +119,21 @@ struct Ppu {
   // OAM memory
   std::array<uint8, 0x100> oam;
 
+  // Palette memory
+  std::array<uint8, 0x20> paletteRam;
+
   // Pixel memory
   std::array<uint8, kScreenWidth * kScreenHeight * 3> pixels;
 
-  // Public functions
-  Ppu(Cartridge &cartridge);
+  nmi_callback_t nmiCallback;
 
+  // Public functions
+  Ppu(Cartridge &cartridge, nmi_callback_t nmiCallback);
+
+  void Power();
   bool Tick();
   uint8 ReadRegister(uint16 address);
   void WriteRegister(uint16 address, uint8 value);
-
-  // Private functions
-  uint8 read(uint16 address);
-  void write(uint16 address, uint8 value);
 };
 
 } // namespace nesturbia

@@ -4,9 +4,10 @@
 #include "catch2/catch_all.hpp"
 
 #include "nesturbia/nesturbia.hpp"
+using namespace nesturbia;
 
 TEST_CASE("Nesturbia_Memory", "[integration]") {
-  nesturbia::Nesturbia emulator;
+  Nesturbia emulator;
 
   // Test RAM mirroring
   emulator.cpuWriteCallback(0x1fff, 0xaa);

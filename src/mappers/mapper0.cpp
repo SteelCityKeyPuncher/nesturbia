@@ -25,6 +25,8 @@ Mapper::ptr_t Mapper0::Create(const std::vector<uint8> &prgRom, const std::vecto
   return mapper;
 }
 
+Mapper::mirror_t Mapper0::GetMirrorType() const { return mirrorType; }
+
 uint8 Mapper0::Read(uint16 address) {
   if (address < 0x8000) {
     // TODO check this

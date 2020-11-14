@@ -12,6 +12,8 @@ struct Cartridge {
   // Public functions
   bool LoadRom(const void *romData, size_t romDataSize);
 
+  [[nodiscard]] Mapper::mirror_t GetMirrorType() const;
+
   uint8 Read(uint16 address);
   void Write(uint16 address, uint8 value);
 

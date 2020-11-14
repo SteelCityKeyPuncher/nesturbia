@@ -6,7 +6,7 @@ Nesturbia::Nesturbia()
     : cpu([this](uint16 address) { return cpuReadCallback(address); },
           [this](uint16 address, uint8 value) { cpuWriteCallback(address, value); },
           [this] { cpuTickCallback(); }),
-      ppu(cartridge) {}
+      ppu(cartridge, [this] { cpu.NMI(); }) {}
 
 bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   if (!cartridge.LoadRom(romData, romDataSize)) {
