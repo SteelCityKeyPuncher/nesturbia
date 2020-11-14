@@ -52,36 +52,47 @@ void Ppu::Power() {
 }
 
 bool Ppu::Tick() {
+  // The return value from this function, which is used to determine when the frame is 'complete'
+  // and ready to render
   bool updateFrame = false;
 
-  if (scanline <= 239 || scanline == 261) {
-    // In the rendering (scanline == 0-239) or pre-rendering (scanline == 261) stage
-    if (scanline == 261 && dot == 1) {
-      // TODO clear secondary OAM
+  // TODO see if this next var can have a smaller scope
+  const auto isRendering = mask.showBackground || mask.showSprites;
+  const auto isVisibleScanline = scanline < 240;
+  const auto isPostRenderingScanline = scanline == 240;
+  const auto isNmiScanline = scanline == 241;
+  const auto isPreRenderingScanline = scanline == 261;
 
-      // Clear PPUSTATUS flags
+  if (isVisibleScanline || isPreRenderingScanline) {
+    // Line 0-239 (visible) / 261 (pre-rendering)
+    // TODO clear secondary OAM
+
+    if (isPreRenderingScanline && dot == 1) {
+      // Clear PPUSTATUS flags when (scanline == 261 / dot == 1)
       status.spriteOverflow = false;
       status.sprite0Hit = false;
       status.vblankStarted = false;
     }
 
-    if (scanline < 240 && dot >= 2 && dot <= 257) {
+    if (isVisibleScanline && dot >= 2 && dot <= 257) {
       const uint8 x = dot - 2;
       uint8 paletteIndex = 0;
 
       if (mask.showBackground) {
+        // PPUMASK has a bit that prevents rendering the background in the first 8 pixels
+        // If that bit isn't set, then don't render the background in those pixels
         if (mask.showBackgroundInLeftmost8Px || x >= 8) {
-          // TODO
         }
       }
 
       if (mask.showSprites) {
+        // PPUMASK has a bit that prevents rendering sprites in the first 8 pixels
+        // If that bit isn't set, then don't render sprites in those pixels
         if (mask.showSpritesInLeftmost8Px || x >= 8) {
-          // TODO
         }
       }
 
-      if (mask.showBackground || mask.showSprites) {
+      if (isRendering) {
         // TODO use the right color
         paletteIndex = 3;
       } else {
@@ -104,28 +115,26 @@ bool Ppu::Tick() {
       pixel[1] = (rgb >> 8) & 0xff;
       pixel[2] = (rgb >> 16) & 0xff;
     }
-  } else if (scanline == 240) {
-    // Post-rendering line
-    // On dot 0 of this scanline, the frame is updated
-    updateFrame = (dot == 0);
-  } else if (scanline == 241) {
-    // NMI line
-    if (dot == 1) {
-      // Set VBLANK (bit 7) in PPUSTATUS ($2002)
-      status.vblankStarted = true;
+  } else if (isPostRenderingScanline && dot == 0) {
+    // Line 240: The frame is considered ready for the frontend on dot 0
+    updateFrame = true;
+  } else if (isNmiScanline && dot == 1) {
+    // Line 241: Set NMI on dot 1
+    // Set VBLANK (bit 7) in PPUSTATUS ($2002)
+    status.vblankStarted = true;
 
-      // If PPUCTRL has the bit set to trigger an NMI on the CPU, do so now
-      if (ctrl.generateNmiAtVBlank && nmiCallback) {
-        nmiCallback();
-      }
+    // If PPUCTRL has the bit set to trigger an NMI on the CPU, do so now
+    if (ctrl.generateNmiAtVBlank && nmiCallback) {
+      nmiCallback();
     }
   }
 
-  if (++dot >= 341) {
-    // Don't simply set to zero
+  // Increment the counters for the current dot + scanline
+  if (++dot > 340) {
+    // Don't simply set the dot to zero
     // This is because the first dot is skipped for odd frames in some cases above
     dot -= 341;
-    if (++scanline == 262) {
+    if (++scanline > 261) {
       scanline = 0;
       isOddFrame = !isOddFrame;
     }
