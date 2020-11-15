@@ -49,6 +49,10 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
   } else if (address < 0x4000) {
     // PPU registers (and their mirrors)
     ppu.WriteRegister(address, value);
+  } else if (address == 0x4014) {
+    for (int i = 0; i < 256; i++) {
+      ppu.WriteRegister(0x2004, cpuReadCallback(value * 0x100 + i));
+    }
   } else if (address >= 0x4018) {
     cartridge.Write(address, value);
   }

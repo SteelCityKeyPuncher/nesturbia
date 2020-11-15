@@ -70,6 +70,8 @@ bool Ppu::Tick() {
     if (scanline < 240 && dot >= 2 && dot <= 257) {
       const uint8 x = dot - 2;
       uint8 paletteIndex = 0;
+      uint8 objPalette = 0;
+      bool objPriority = false;
 
       if (mask.showBackground || mask.showSprites) {
         if (mask.showBackground) {
@@ -90,9 +92,33 @@ bool Ppu::Tick() {
           // PPUMASK has a bit that prevents rendering sprites in the first 8 pixels
           // If that bit isn't set, then don't render sprites in those pixels
           if (mask.showSpritesInLeftmost8Px || x >= 8) {
+            for (int i = 7; i >= 0; i--) {
+              if (oamPrimary[i].id == 64)
+                continue; // Void entry.
+              unsigned sprX = x - oamPrimary[i].x;
+              if (sprX >= 8)
+                continue; // Not in range.
+              if (oamPrimary[i].attributes & 0x40)
+                sprX ^= 7; // Horizontal flip.
+
+              uint8 sprPalette =
+                  (oamPrimary[i].dataH.bit(7 - sprX) << 1) | oamPrimary[i].dataL.bit(7 - sprX);
+              if (sprPalette == 0)
+                continue; // Transparent pixel.
+
+              if (oamPrimary[i].id == 0 && paletteIndex && x != 255)
+                status.sprite0Hit = true;
+
+              sprPalette |= (oamPrimary[i].attributes & 3) << 2;
+              objPalette = sprPalette + 16;
+              objPriority = oamPrimary[i].attributes & 0x20;
+            }
           }
         }
       }
+
+      if (objPalette && (paletteIndex == 0 || objPriority == false))
+        paletteIndex = objPalette;
 
       // TODO could make a common function since this logic exists in PPUDATA code
       // TODO is this necessary based on code above?
@@ -111,7 +137,19 @@ bool Ppu::Tick() {
       pixel[2] = (rgb >> 0) & 0xff;
     }
 
-    if ((dot >= 2 && dot <= 255) || (dot >= 322 && dot <= 337)) {
+    if (dot == 1) {
+      for (auto &entry : oamSecondary) {
+        entry.id = 64;
+        entry.y = 0xFF;
+        entry.tile = 0xFF;
+        entry.attributes = 0xFF;
+        entry.x = 0xFF;
+        entry.dataL = 0;
+        entry.dataH = 0;
+      }
+
+      renderData.address = 0x2000 | (vramAddr.value & 0xfff);
+    } else if ((dot >= 2 && dot <= 255) || (dot >= 322 && dot <= 337)) {
       renderData.bgShiftL <<= 1;
       renderData.bgShiftH <<= 1;
       renderData.atShiftL = (renderData.atShiftL << 1) | renderData.atLatchL;
@@ -185,6 +223,29 @@ bool Ppu::Tick() {
         }
       }
     } else if (dot == 257) {
+      if (scanline != 261) {
+        // Evaluate sprites
+        uint8 spriteCount = 0;
+        for (uint8 i = 0; i < 64; i++) {
+          auto y = oam[i * 4 + 0];
+          int row = (int)scanline - y;
+          if (row < 0 || row >= ctrl.spriteHeight) {
+            continue;
+          }
+
+          oamSecondary[spriteCount].id = i;
+          oamSecondary[spriteCount].y = oam[i * 4 + 0];
+          oamSecondary[spriteCount].tile = oam[i * 4 + 1];
+          oamSecondary[spriteCount].attributes = oam[i * 4 + 2];
+          oamSecondary[spriteCount].x = oam[i * 4 + 3];
+
+          if (++spriteCount == 8) {
+            status.spriteOverflow = true;
+            break;
+          }
+        }
+      }
+
       renderData.atLatchL = renderData.attributeByte.bit(0);
       renderData.atLatchH = renderData.attributeByte.bit(1);
 
@@ -203,10 +264,35 @@ bool Ppu::Tick() {
 
         vramAddr.fields.fineY = vramAddrLatch.fields.fineY;
       }
-    } else if (dot == 1 || dot == 321 || dot == 339) {
+    } else if (dot == 321) {
+      // Load sprites
+      for (uint8 i = 0; i < 8; i++) {
+        oamPrimary[i] = oamSecondary[i];
+
+        uint16 address;
+        if (ctrl.spriteHeight == 16) {
+          address = ((oamPrimary[i].tile & 1) * 0x1000) + ((oamPrimary[i].tile & ~1) * 16);
+        } else {
+          address = ctrl.spriteTableAddr + (oamPrimary[i].tile * 16);
+        }
+
+        auto spriteY = (scanline - oamPrimary[i].y) & (ctrl.spriteHeight - 1);
+        if (oamPrimary[i].attributes.bit(7)) {
+          // Vertical flipping
+          spriteY ^= (ctrl.spriteHeight - 1);
+        }
+
+        address += spriteY + (spriteY & 8);
+
+        oamPrimary[i].dataL = read(address);
+        oamPrimary[i].dataH = read(address + 8);
+      }
+
       renderData.address = 0x2000 | (vramAddr.value & 0xfff);
     } else if (dot == 338 || dot == 340) {
       renderData.nametableByte = read(renderData.address);
+    } else if (dot == 339) {
+      renderData.address = 0x2000 | (vramAddr.value & 0xfff);
     }
   } else if (scanline == 240 && dot == 0) {
     // Line 240: The frame is considered ready for the frontend on dot 0

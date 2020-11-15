@@ -98,6 +98,16 @@ struct Ppu {
     bool atLatchH;
   };
 
+  struct oam_entry_t {
+    uint8 id;
+    uint8 x;
+    uint8 y;
+    uint8 tile;
+    uint8 attributes;
+    uint8 dataL;
+    uint8 dataH;
+  };
+
   using nmi_callback_t = std::function<void(void)>;
 
   // Data
@@ -133,6 +143,8 @@ struct Ppu {
 
   // OAM memory
   std::array<uint8, 0x100> oam;
+  std::array<oam_entry_t, 8> oamPrimary;
+  std::array<oam_entry_t, 8> oamSecondary;
 
   // Palette memory
   std::array<uint8, 0x20> paletteRam;

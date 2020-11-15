@@ -11,11 +11,6 @@ Mapper::ptr_t Mapper0::Create(const std::vector<uint8> &prgRom, const std::vecto
     return nullptr;
   }
 
-  // Validate CHR-ROM size
-  if (chrRom.size() != 0x2000) {
-    return nullptr;
-  }
-
   auto mapper = std::make_unique<Mapper0>();
 
   mapper->prgRom = prgRom;
@@ -47,8 +42,11 @@ uint8 Mapper0::Read(uint16 address) {
 void Mapper0::Write(uint16, uint8) {}
 
 uint8 Mapper0::ReadChr(uint16 address) {
-  assert(address < chrRom.size());
-  return chrRom[address];
+  if (address < chrRom.size()) {
+    return chrRom[address];
+  }
+
+  return 0;
 }
 
 void Mapper0::WriteChr(uint16, uint8) {
