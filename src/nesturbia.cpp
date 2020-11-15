@@ -17,7 +17,11 @@ bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   return true;
 }
 
-void Nesturbia::RunFrame() {
+void Nesturbia::RunFrame(const Joypad::input_t &joypadInput1, const Joypad::input_t &joypadInput2) {
+  // Update joypad inputs
+  joypads[0].SetInput(joypadInput1);
+  joypads[1].SetInput(joypadInput2);
+
   isNewFrame = false;
   for (;;) {
     cpu.executeInstruction();
@@ -28,12 +32,15 @@ void Nesturbia::RunFrame() {
 }
 
 uint8 Nesturbia::cpuReadCallback(uint16 address) {
+  // TODO read from joypad 1 (zero-indexed, the second one)
   if (address < 0x2000) {
     // RAM (0x0000 - 0x07ff, but mirrored up to 0x1fff)
     return ram[address & 0x7ff];
   } else if (address < 0x4000) {
     // PPU registers (and their mirrors)
     return ppu.ReadRegister(address);
+  } else if (address == 0x4016) {
+    return joypads[0].Read();
   } else if (address >= 0x4018) {
     return cartridge.Read(address);
   }
@@ -53,6 +60,10 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
     for (int i = 0; i < 256; i++) {
       ppu.WriteRegister(0x2004, cpuReadCallback(value * 0x100 + i));
     }
+  } else if (address == 0x4016) {
+    // Joypad strobes
+    joypads[0].Strobe(value.bit(0));
+    joypads[1].Strobe(value.bit(0));
   } else if (address >= 0x4018) {
     cartridge.Write(address, value);
   }

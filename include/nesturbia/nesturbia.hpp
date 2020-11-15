@@ -7,6 +7,7 @@
 #include "nesturbia/apu.hpp"
 #include "nesturbia/cartridge.hpp"
 #include "nesturbia/cpu.hpp"
+#include "nesturbia/joypad.hpp"
 #include "nesturbia/mapper.hpp"
 #include "nesturbia/ppu.hpp"
 #include "nesturbia/types.hpp"
@@ -19,6 +20,7 @@ struct Nesturbia {
   Cpu cpu;
   Ppu ppu;
   Apu apu;
+  std::array<Joypad, 2> joypads;
 
   std::array<uint8, 0x800> ram;
 
@@ -27,7 +29,7 @@ struct Nesturbia {
   // Public functions
   Nesturbia();
   bool LoadRom(const void *romData, size_t romDataSize);
-  void RunFrame();
+  void RunFrame(const Joypad::input_t &joypadInput1 = {}, const Joypad::input_t &joypadInput2 = {});
 
   // Private functions
   uint8 cpuReadCallback(uint16 address);

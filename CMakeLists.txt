@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME}
   src/apu.cpp
   src/cartridge.cpp
   src/cpu.cpp
+  src/joypad.cpp
   src/mapper.cpp
   src/mappers/mapper0.cpp
   src/nesturbia.cpp

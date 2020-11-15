@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 
 #include "GLFW/glfw3.h"
@@ -39,6 +40,7 @@ struct glfwDeleter {
 // Local variables
 std::unique_ptr<GLFWwindow, glfwDeleter> glfwWindow;
 nesturbia::Nesturbia emulator;
+nesturbia::Joypad::input_t joypadInput1;
 GLuint shader = -1;
 GLuint texture = -1;
 GLuint VAO = -1;
@@ -49,6 +51,7 @@ GLuint EBO = -1;
 bool parseArguments(int argc, char **argv);
 bool initializeGraphics();
 void runLoop();
+void updateJoypadInput();
 void glfwErrorCallback(int error, const char *description);
 void glfwWindowSizeCallback(GLFWwindow *window, int, int);
 
@@ -259,15 +262,23 @@ void runLoop() {
   // If enough time has elapsed to actually render, then do so
   while (!glfwWindowShouldClose(glfwWindow.get())) {
     const auto currentTime = glfwGetTime();
-    // TODO read inputs - here after glfwPollEvents()?
-
     // See if we can render in this loop
     if ((currentTime - lastFrameTime) >= kFrameTime) {
       // It's time to render
       // Prepare the window for rendering (clear color buffer)
       glClear(GL_COLOR_BUFFER_BIT);
 
-      emulator.RunFrame();
+      // TODO: Temporary, close the window if the ESC key is pressed
+      if (glfwGetKey(glfwWindow.get(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(glfwWindow.get(), true);
+      }
+
+      // Get user inputs (controller/joypad)
+      // TODO: only one controller is supported for now
+      updateJoypadInput();
+
+      // Run one frame
+      emulator.RunFrame(joypadInput1);
 
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 240, GL_RGB, GL_UNSIGNED_BYTE,
                       emulator.ppu.pixels.data());
@@ -278,11 +289,29 @@ void runLoop() {
 
       // TODO input polling
       glfwPollEvents();
+    }
+  }
+}
 
-      // TODO: Temporary, close the window if the ESC key is pressed
-      if (glfwGetKey(glfwWindow.get(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(glfwWindow.get(), true);
-      }
+void updateJoypadInput() {
+  // TODO allow different mappings
+  static const std::unordered_map<int, bool &> kKeyMap = {
+      {GLFW_KEY_Z, joypadInput1.a},
+      {GLFW_KEY_X, joypadInput1.b},
+      {GLFW_KEY_RIGHT_SHIFT, joypadInput1.select},
+      {GLFW_KEY_ENTER, joypadInput1.start},
+      {GLFW_KEY_UP, joypadInput1.up},
+      {GLFW_KEY_DOWN, joypadInput1.down},
+      {GLFW_KEY_LEFT, joypadInput1.left},
+      {GLFW_KEY_RIGHT, joypadInput1.right},
+  };
+
+  for (const auto &entry : kKeyMap) {
+    const auto keyState = glfwGetKey(glfwWindow.get(), entry.first);
+    if (keyState == GLFW_PRESS) {
+      entry.second = true;
+    } else if (keyState == GLFW_RELEASE) {
+      entry.second = false;
     }
   }
 }
