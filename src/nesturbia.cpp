@@ -8,6 +8,10 @@ Nesturbia::Nesturbia()
           [this] { cpuTickCallback(); }),
       ppu(cartridge, [this] { cpu.NMI(); }) {}
 
+void Nesturbia::SetAudioSampleCallback(Apu::sample_callback_t sampleCallback, uint32_t sampleRate) {
+  apu.SetSampleCallback(sampleCallback, sampleRate);
+}
+
 bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   if (!cartridge.LoadRom(romData, romDataSize)) {
     return false;
@@ -72,10 +76,14 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
 }
 
 void Nesturbia::cpuTickCallback() {
-  // Each CPU tick should result in 3 PPU ticks
+  // Each CPU tick results in 3 PPU ticks
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
+
+  // Each CPU tick results in 1 APU tick
+  // (the APU is actually part of the CPU)
+  apu.Tick();
 }
 
 } // namespace nesturbia

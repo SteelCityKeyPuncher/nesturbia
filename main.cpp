@@ -48,11 +48,18 @@ GLuint VAO = -1;
 GLuint VBO = -1;
 GLuint EBO = -1;
 
+struct audio_user_data_t {
+  std::array<float, 65536> samples;
+  volatile uint16_t head = 0;
+  volatile uint16_t tail = 0;
+} audio;
+
 // Local functions
 bool parseArguments(int argc, char **argv);
 bool initializeGraphics();
 bool initializeAudio();
 void runLoop();
+void audioSampleCallback(float sample);
 void updateJoypadInput();
 void glfwErrorCallback(int error, const char *description);
 void glfwWindowSizeCallback(GLFWwindow *window, int, int);
@@ -226,18 +233,21 @@ bool initializeGraphics() {
 
 bool initializeAudio() {
   auto audioCallback = [](const void *, void *outputBuffer, unsigned long framesPerBuffer,
-                          const PaStreamCallbackTimeInfo *, PaStreamCallbackFlags, void *) -> int {
+                          const PaStreamCallbackTimeInfo *, PaStreamCallbackFlags,
+                          void *userData) -> int {
+    // Audio output buffer
     auto outElement = reinterpret_cast<float *>(outputBuffer);
 
-    static double phase;
+    static float sample = 0.f;
 
     for (unsigned long i = 0; i < framesPerBuffer; i++) {
-      const auto sample = sin(phase) / 4.0;
+      if (auto audioData = reinterpret_cast<audio_user_data_t *>(userData)) {
+        if (audioData->head != audioData->tail) {
+          sample = audioData->samples[audioData->head++];
+        }
+      }
 
-      *outElement++ = sample;
-      *outElement++ = sample;
-
-      phase += 2 * 3.14159265358979323846 * 440.0 / 44100.0;
+      outElement[i] = sample;
     }
 
     return paContinue;
@@ -248,7 +258,7 @@ bool initializeAudio() {
   }
 
   PaStream *stream;
-  if (Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, 44100.0, 64, audioCallback, nullptr) !=
+  if (Pa_OpenDefaultStream(&stream, 0, 1, paFloat32, 44100.0, 64, audioCallback, &audio) !=
       paNoError) {
     goto error;
   }
@@ -256,6 +266,9 @@ bool initializeAudio() {
   if (Pa_StartStream(stream) != paNoError) {
     goto error;
   }
+
+  // TODO create a constant for sample rate
+  emulator.SetAudioSampleCallback(audioSampleCallback, 44100);
 
   return true;
 
@@ -310,6 +323,12 @@ void runLoop() {
       // TODO input polling
       glfwPollEvents();
     }
+  }
+}
+
+void audioSampleCallback(float sample) {
+  if (audio.tail != ((audio.head - 1) % audio.samples.size())) {
+    audio.samples[audio.tail++] = sample;
   }
 }
 

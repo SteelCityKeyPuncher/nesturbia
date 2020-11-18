@@ -21,13 +21,13 @@ struct Nesturbia {
   Ppu ppu;
   Apu apu;
   std::array<Joypad, 2> joypads;
-
   std::array<uint8, 0x800> ram;
 
   bool isNewFrame;
 
   // Public functions
   Nesturbia();
+  void SetAudioSampleCallback(Apu::sample_callback_t sampleCallback, uint32_t sampleRate);
   bool LoadRom(const void *romData, size_t romDataSize);
   void RunFrame(const Joypad::input_t &joypadInput1 = {}, const Joypad::input_t &joypadInput2 = {});
 

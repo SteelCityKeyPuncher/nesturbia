@@ -6,13 +6,16 @@
 namespace nesturbia {
 
 struct Apu {
+  // Types
+  using sample_callback_t = void (*)(float);
+
   // Data
+  sample_callback_t sampleCallback = nullptr;
+  double ticksPerSample = 0;
 
   // Public functions
-  uint8 Read(uint16 address);
-  void Write(uint16 address, uint8 value);
-
-  // Private functions
+  void SetSampleCallback(sample_callback_t sampleCallback, uint32_t sampleRate);
+  void Tick();
 };
 
 } // namespace nesturbia
