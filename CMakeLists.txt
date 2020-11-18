@@ -71,9 +71,16 @@ target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME}-bin PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME}-bin "glad" "${CMAKE_DL_LIBS}")
 
+set(PORTAUDIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/portaudio")
+set(PA_BUILD_SHARED OFF CACHE INTERNAL "Build PortAudio shared library")
+add_subdirectory("${PORTAUDIO_DIR}")
+target_link_libraries(${PROJECT_NAME}-bin "portaudio_static")
+target_include_directories(${PROJECT_NAME}-bin PRIVATE "${PORTAUDIO_DIR}/include")
+
 # Catch2 (testing framework)
 set(CATCH2_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/Catch2")
 add_subdirectory("${CATCH2_DIR}")
 
 # Build the test project
+# TODO add an option so that this isn't built by default
 add_subdirectory(test)

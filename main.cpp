@@ -1,5 +1,5 @@
+#include <cmath> // TODO temporary (remove me)
 #include <cstdint>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
@@ -7,6 +7,7 @@
 
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
+#include "portaudio.h"
 
 #include "nesturbia/nesturbia.hpp"
 
@@ -50,6 +51,7 @@ GLuint EBO = -1;
 // Local functions
 bool parseArguments(int argc, char **argv);
 bool initializeGraphics();
+bool initializeAudio();
 void runLoop();
 void updateJoypadInput();
 void glfwErrorCallback(int error, const char *description);
@@ -59,16 +61,20 @@ void glfwWindowSizeCallback(GLFWwindow *window, int, int);
 
 int main(int argc, char **argv) {
   if (!parseArguments(argc, argv)) {
-    return EXIT_FAILURE;
+    return 1;
   }
 
   if (!initializeGraphics()) {
-    return EXIT_FAILURE;
+    return 1;
+  }
+
+  if (!initializeAudio()) {
+    return 1;
   }
 
   runLoop();
 
-  return EXIT_SUCCESS;
+  return 0;
 }
 
 namespace {
@@ -169,44 +175,18 @@ bool initializeGraphics() {
     return false;
   }
 
-  constexpr std::array<float, 6 * 5> kVertices = {
-      // Top left
-      -1.f,
-      1.f,
-      0.0f,
-      0.f,
-      0.f,
-      // Bottom left
-      -1.f,
-      -1.f,
-      0.0f,
-      0.f,
-      1.f,
-      // Bottom Right
-      1.0f,
-      -1.f,
-      0.0f,
-      1.f,
-      1.f,
-      // Top left
-      -1.f,
-      1.f,
-      0.0f,
-      0.f,
-      0.f,
-      // Bottom Right
-      1.0f,
-      -1.f,
-      0.0f,
-      1.f,
-      1.f,
-      // Top Right
-      1.0f,
-      1.f,
-      0.0f,
-      1.f,
-      0.f,
-  };
+  constexpr std::array<float, 6 * 5> kVertices = {// Top left
+                                                  -1.f, 1.f, 0.0f, 0.f, 0.f,
+                                                  // Bottom left
+                                                  -1.f, -1.f, 0.0f, 0.f, 1.f,
+                                                  // Bottom Right
+                                                  1.0f, -1.f, 0.0f, 1.f, 1.f,
+                                                  // Top left
+                                                  -1.f, 1.f, 0.0f, 0.f, 0.f,
+                                                  // Bottom Right
+                                                  1.0f, -1.f, 0.0f, 1.f, 1.f,
+                                                  // Top Right
+                                                  1.0f, 1.f, 0.0f, 1.f, 0.f};
 
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
@@ -242,6 +222,46 @@ bool initializeGraphics() {
 
   // Success
   return true;
+}
+
+bool initializeAudio() {
+  auto audioCallback = [](const void *, void *outputBuffer, unsigned long framesPerBuffer,
+                          const PaStreamCallbackTimeInfo *, PaStreamCallbackFlags, void *) -> int {
+    auto outElement = reinterpret_cast<float *>(outputBuffer);
+
+    static double phase;
+
+    for (unsigned long i = 0; i < framesPerBuffer; i++) {
+      const auto sample = sin(phase) / 4.0;
+
+      *outElement++ = sample;
+      *outElement++ = sample;
+
+      phase += 2 * 3.14159265358979323846 * 440.0 / 44100.0;
+    }
+
+    return paContinue;
+  };
+
+  if (Pa_Initialize() != paNoError) {
+    goto error;
+  }
+
+  PaStream *stream;
+  if (Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, 44100.0, 64, audioCallback, nullptr) !=
+      paNoError) {
+    goto error;
+  }
+
+  if (Pa_StartStream(stream) != paNoError) {
+    goto error;
+  }
+
+  return true;
+
+error:
+  Pa_Terminate();
+  return false;
 }
 
 void runLoop() {
