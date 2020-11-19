@@ -1,7 +1,11 @@
 #include <cmath> // TODO temporary (remove me)
 #include <cstdint>
+#include <fcntl.h>
 #include <fstream>
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <unordered_map>
 #include <vector>
 
@@ -253,9 +257,18 @@ bool initializeAudio() {
     return paContinue;
   };
 
+  // TODO make cross-platform or see if there is a better method
+  auto stderrOrig = dup(STDERR_FILENO);
+  auto devnull = open("/dev/null", O_RDWR);
+  dup2(devnull, STDERR_FILENO);
+  close(devnull);
+
   if (Pa_Initialize() != paNoError) {
     goto error;
   }
+
+  fflush(stderr);
+  dup2(stderrOrig, STDERR_FILENO);
 
   PaStream *stream;
   if (Pa_OpenDefaultStream(&stream, 0, 1, paFloat32, 44100.0, 64, audioCallback, &audio) !=
