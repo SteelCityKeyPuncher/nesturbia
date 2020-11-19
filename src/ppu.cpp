@@ -22,9 +22,7 @@ uint16 nametableMap(Mapper::mirror_t mirrorType, uint16 address);
 } // namespace
 
 Ppu::Ppu(Cartridge &cartridge, nmi_callback_t nmiCallback)
-    : cartridge(cartridge), nmiCallback(std::move(nmiCallback)) {
-  Power();
-}
+    : cartridge(cartridge), nmiCallback(std::move(nmiCallback)) {}
 
 void Ppu::Power() {
   ctrl = 0;

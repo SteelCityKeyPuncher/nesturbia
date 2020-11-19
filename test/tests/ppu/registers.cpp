@@ -12,6 +12,8 @@ TEST_CASE("Ppu_ReadLatch", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   ppu.WriteRegister(0x2000, 0xff);
   CHECK(ppu.ReadRegister(0x2000) == 0xff);
   CHECK(ppu.ReadRegister(0x2001) == 0xff);
@@ -24,6 +26,8 @@ TEST_CASE("Ppu_RegPpuctrl", "[ppu]") {
   // Test various PPUCTRL register settings
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   // Write directly to 0x2000
   ppu.WriteRegister(0x2000, 0xff);
@@ -50,6 +54,8 @@ TEST_CASE("Ppu_RegPpumask", "[ppu]") {
   // Test various PPUCTRL register settings
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   // Write directly to 0x2001
   ppu.WriteRegister(0x2001, 0xff);
@@ -80,6 +86,8 @@ TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
   // Test various PPUCTRL register settings
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   ppu.status.latchedData = 0;
   ppu.status.spriteOverflow = false;
@@ -114,6 +122,8 @@ TEST_CASE("Ppu_RegOam", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   ppu.oamaddr = 0x10;
 
   // Write OAM using the base register
@@ -133,6 +143,8 @@ TEST_CASE("Ppu_RegOam", "[ppu]") {
 TEST_CASE("Ppu_Ppuscroll", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   ppu.addressWriteLatch = false;
 
@@ -162,6 +174,8 @@ TEST_CASE("Ppu_Ppuscroll", "[ppu]") {
 TEST_CASE("Ppu_Ppuaddr", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   // Power-up state
   CHECK(ppu.vramAddrLatch.value == 0);
@@ -210,6 +224,8 @@ TEST_CASE("Ppu_Ppudata_Chr", "[ppu]") {
 
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   // Set PPUADDR = $10ff
   ppu.WriteRegister(0x2006, 0x10);
   ppu.WriteRegister(0x2006, 0xff);
@@ -246,6 +262,8 @@ TEST_CASE("Ppu_Ppudata_NametableMirrorVertical", "[ppu]") {
   REQUIRE(cartridge.LoadRom(rom.data(), 16 + 0x4000 + 0x2000));
 
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   //
   // 0x37ff should map to 0x7ff
@@ -302,6 +320,8 @@ TEST_CASE("Ppu_Ppudata_NametableMirrorHorizontal", "[ppu]") {
 
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   //
   // 0x3eff should map to 0x6ff
   // Vertical mirroring ties bit 11 (0x800) and to bit 11's place (0x400)
@@ -340,6 +360,8 @@ TEST_CASE("Ppu_Ppudata_NametableMirrorHorizontal", "[ppu]") {
 TEST_CASE("Ppu_Ppudata_Palette", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   // Set PPUADDR = $3f00
   ppu.WriteRegister(0x2006, 0x3f);

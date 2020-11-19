@@ -11,6 +11,8 @@ TEST_CASE("Ppu_TimingVBlank", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   //
   // Test that a VBLANK occurs at the appropriate time
   //
@@ -74,6 +76,8 @@ TEST_CASE("Ppu_TimingOddFrame_RenderingEnabled", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   // Enable rendering (only one of these is necessary)
   ppu.mask.showBackground = true;
   ppu.mask.showSprites = true;
@@ -99,6 +103,8 @@ TEST_CASE("Ppu_TimingOddFrame_RenderingDisabled", "[ppu]") {
   // Test that "odd frames" _don't_ skip the first tick when rendering is disabled
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
+
+  ppu.Power();
 
   // Disable rendering (these should be false on "power up" anyway)
   ppu.mask.showBackground = false;

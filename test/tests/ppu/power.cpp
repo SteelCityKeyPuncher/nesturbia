@@ -12,6 +12,8 @@ TEST_CASE("Ppu_Power", "[ppu]") {
   Cartridge cartridge;
   Ppu ppu(cartridge, [] {});
 
+  ppu.Power();
+
   //
   // PPUCTRL ($2000) == 0x00
   //

@@ -1,4 +1,6 @@
 add_executable(${PROJECT_NAME}-test
+  tests/apu/framecounter.cpp
+  tests/apu/power.cpp
   tests/cpu/instructions/adc.cpp
   tests/cpu/instructions/and.cpp
   tests/cpu/instructions/asl.cpp
