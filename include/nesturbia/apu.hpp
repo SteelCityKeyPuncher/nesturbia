@@ -13,28 +13,29 @@ struct Apu {
 
   struct length_counter_t {
     // TODO halt isn't cleared on reset for triangle (keep in mind if implementing reset behavior)
-    bool halt;
-    uint8 value;
+    bool halt = false;
+    // 5-bit value
+    uint8 value = 0;
   };
 
   struct envelope_t {
-    bool loop;
+    bool loop = false;
     // Note: called 'constant volume' in some places
-    bool disabled;
+    bool disabled = false;
     // 4-bit value
-    uint8 volume;
+    uint8 volume = 0;
     // 4-bit value
-    uint8 divider;
+    uint8 divider = 0;
     // 4-bit value
-    uint8 count;
+    uint8 count = 0;
     bool reload = false;
   };
 
   struct pulse_channel_t {
-    // TODO need an 'enabled' for reg $4015
+    bool enabled = false;
 
     // 2-bit value
-    uint8 duty;
+    uint8 duty = 0;
     // 3-bit value, wraps around
     uint8 dutyIndex = 0;
 
@@ -56,8 +57,37 @@ struct Apu {
     uint16 period;
 
     // 11-bit value
-    // TODO where to initialize?
+    // TODO where to initialize (other than here obviously)?
     uint16 timerCounter = 0;
+  };
+
+  struct triangle_channel_t {
+    bool enabled = false;
+
+    length_counter_t length;
+
+    // 5-bit value, wraps around
+    uint8 dutyIndex = 0;
+
+    struct {
+      bool control;
+      // 7-bit value
+      uint8 load = 0;
+      // 7-bit value
+      uint8 value = 0;
+      bool reload = false;
+    } linearCounter;
+
+    // 11-bit value
+    uint16 period;
+
+    // 11-bit value
+    // TODO where to initialize (other than here obviously)?
+    uint16 timerCounter = 0;
+  };
+
+  struct noise_channel_t {
+    // TODO
   };
 
   struct frame_counter_t {
@@ -72,6 +102,7 @@ struct Apu {
   double ticksPerSample = 0;
 
   std::array<pulse_channel_t, 2> pulseChannels;
+  triangle_channel_t triangleChannel;
   frame_counter_t frameCounter;
 
   bool isOddCycle;

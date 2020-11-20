@@ -47,7 +47,7 @@ void Apu::Tick() {
 
     // Quarter frames occur every step
     if (isStep1 || isStep2 || isStep3 || isStep4) {
-      // Pulse envelopes
+      // Pulse: envelopes
       for (auto &pulse : pulseChannels) {
         if (pulse.envelope.reload) {
           pulse.envelope.reload = false;
@@ -65,23 +65,68 @@ void Apu::Tick() {
         }
       }
 
+      // Triangle: linear counter
+      if (triangleChannel.linearCounter.reload) {
+        triangleChannel.linearCounter.value = triangleChannel.linearCounter.load;
+      } else {
+        if (triangleChannel.linearCounter.value != 0) {
+          --triangleChannel.linearCounter.value;
+        }
+      }
+
+      if (!triangleChannel.linearCounter.control) {
+        // Disable reloading if bit 7 of $4008 is cleared
+        triangleChannel.linearCounter.reload = false;
+      }
+
       // TODO other waveforms
     }
 
     // Half frames occur on step 2 and 4
     if (isStep2 || isStep4) {
-      // Pulse sweep + length counters
+      // Pulse: sweep + length counters
+      bool isPulse1 = true;
       for (auto &pulse : pulseChannels) {
         // Sweep
         if (pulse.sweep.reload) {
+          // TODO this logic is duplicated below
+          if (pulse.sweep.enabled) {
+            pulse.sweep.divider = pulse.sweep.period;
+            if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
+              auto periodShifted = pulse.period >> pulse.sweep.shiftAmount;
+              if (pulse.sweep.negate) {
+                // Get the one's complement (used by pulse 1)
+                periodShifted = ~periodShifted;
+                if (!isPulse1) {
+                  // Pulse 2 uses the two's complement (one's complement + 1)
+                  ++periodShifted;
+                }
+              }
+
+              pulse.period += periodShifted;
+            }
+          }
+
           pulse.sweep.reload = false;
           pulse.sweep.divider = pulse.sweep.period;
         } else {
           if (pulse.sweep.divider == 0) {
-            pulse.sweep.divider = pulse.sweep.period;
-            if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
-              // TODO implement correctly
-              pulse.period = rand();
+            // TODO this logic is duplicated above
+            if (pulse.sweep.enabled) {
+              pulse.sweep.divider = pulse.sweep.period;
+              if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
+                auto periodShifted = pulse.period >> pulse.sweep.shiftAmount;
+                if (pulse.sweep.negate) {
+                  // Get the one's complement (used by pulse 1)
+                  periodShifted = ~periodShifted;
+                  if (!isPulse1) {
+                    // Pulse 2 uses the two's complement (one's complement + 1)
+                    ++periodShifted;
+                  }
+                }
+
+                pulse.period += periodShifted;
+              }
             }
           } else {
             --pulse.sweep.divider;
@@ -92,6 +137,13 @@ void Apu::Tick() {
         if (!pulse.length.halt && pulse.length.value != 0) {
           --pulse.length.value;
         }
+
+        isPulse1 = false;
+      }
+
+      // Triangle: length counter
+      if (!triangleChannel.length.halt && triangleChannel.length.value != 0) {
+        --triangleChannel.length.value;
       }
 
       // TODO other waveforms
@@ -122,13 +174,27 @@ void Apu::Tick() {
     }
   }
 
+  // Triangle channel code that's executed every CPU cycle
+  // (most APU channel code executes on an APU cycle, which is 2 CPU cycles)
+  if (triangleChannel.timerCounter == 0) {
+    triangleChannel.timerCounter = triangleChannel.period;
+
+    if (triangleChannel.length.value != 0 && triangleChannel.linearCounter.value != 0) {
+      // 5-bit value that wraps around
+      triangleChannel.dutyIndex = (triangleChannel.dutyIndex + 1) & 0x1f;
+    }
+  } else {
+    --triangleChannel.timerCounter;
+  }
+
   isOddCycle = !isOddCycle;
 
   static double sampleSum = 0;
   static uint32_t numSamples = 0;
 
+  // Pulse output
   for (auto &pulse : pulseChannels) {
-    if (pulse.length.value == 0) {
+    if (!pulse.enabled || pulse.length.value == 0) {
       continue;
     }
 
@@ -143,7 +209,21 @@ void Apu::Tick() {
       continue;
     }
 
-    sampleSum += pulse.envelope.disabled ? pulse.envelope.volume : pulse.envelope.count;
+    // TODO: do proper mixing logic
+    sampleSum += 0.00752 * (pulse.envelope.disabled ? pulse.envelope.volume : pulse.envelope.count);
+  }
+
+  // Triangle output
+  // TODO check enabled ($4015 flag)
+  if (triangleChannel.enabled && triangleChannel.length.value != 0 &&
+      triangleChannel.linearCounter.value != 0) {
+    // TODO move somewhere else?
+    constexpr std::array<uint8_t, 32> kTriangleTable = {15, 14, 13, 12, 11, 10, 9,  8,  7,  6, 5,
+                                                        4,  3,  2,  1,  0,  0,  1,  2,  3,  4, 5,
+                                                        6,  7,  8,  9,  10, 11, 12, 13, 14, 15};
+
+    // TODO: do proper mixing logic
+    sampleSum += 0.00851 * kTriangleTable[triangleChannel.dutyIndex];
   }
 
   ++numSamples;
@@ -153,13 +233,12 @@ void Apu::Tick() {
     // New sample
     elapsedCycles -= ticksPerSample;
 
-    const float sample = sampleSum / numSamples;
+    if (sampleCallback) {
+      sampleCallback(sampleSum / numSamples / 4);
+    }
+
     sampleSum = 0;
     numSamples = 0;
-
-    if (sampleCallback) {
-      sampleCallback(sample);
-    }
   }
 }
 
@@ -174,7 +253,7 @@ uint8 Apu::ReadRegister(uint16 address) {
 
 void Apu::WriteRegister(uint16 address, uint8 value) {
   // Used for pulse configuration registers ($4000-4007) only
-  const auto pulseChannel = static_cast<uint8>(address.bit(3));
+  const auto pulseChannel = static_cast<uint8>(address.bit(2));
 
   switch (address) {
   case 0x4000:
@@ -210,6 +289,8 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
   case 0x4007:
     pulseChannels[pulseChannel].period &= 0x0ff;
     pulseChannels[pulseChannel].period |= (value & 0x7) << 8;
+
+    // Length counter load (L)
     pulseChannels[pulseChannel].length.value = kLengthCounterLookupTable[value >> 3];
 
     // Side effect: Reset the 3-bit ([0-7]) index into the duty cycle table
@@ -220,8 +301,40 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
     break;
 
   case 0x4008:
+    triangleChannel.length.halt = value.bit(7);
+
+    triangleChannel.linearCounter.control = value.bit(7);
+    triangleChannel.linearCounter.load = value & 0x7f;
+    break;
+
   case 0x400a:
-  case 0x400b:
+    // Timer (T) low
+    triangleChannel.period &= 0x700;
+    triangleChannel.period |= value;
+    break;
+
+  case 0x400b: {
+    // Timer (T) high (top 3 bits)
+    triangleChannel.period &= 0x0ff;
+    triangleChannel.period |= (value & 0x7) << 8;
+
+    triangleChannel.timerCounter = triangleChannel.period;
+
+    // Length counter load (L)
+    // TODO move somewhere else?
+    constexpr std::array<uint8_t, 32> kTriangleOutput = {15, 14, 13, 12, 11, 10, 9,  8,  7,  6, 5,
+                                                         4,  3,  2,  1,  0,  0,  1,  2,  3,  4, 5,
+                                                         6,  7,  8,  9,  10, 11, 12, 13, 14, 15};
+
+    triangleChannel.length.value = kTriangleOutput[value >> 3];
+
+    // Reload the linear counter
+    triangleChannel.linearCounter.reload = true;
+
+    // Clear the duty cycle index
+    triangleChannel.dutyIndex = 0;
+  } break;
+
   case 0x400c:
   case 0x400e:
   case 0x400f:
@@ -229,8 +342,24 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
   case 0x4011:
   case 0x4012:
   case 0x4013:
+    break;
+
   case 0x4015:
-    // TODO
+    // TODO other channels
+    triangleChannel.enabled = value.bit(2);
+    if (!triangleChannel.enabled) {
+      triangleChannel.length.value = 0;
+    }
+
+    pulseChannels[1].enabled = value.bit(1);
+    if (!pulseChannels[1].enabled) {
+      pulseChannels[1].length.value = 0;
+    }
+
+    pulseChannels[0].enabled = value.bit(0);
+    if (!pulseChannels[0].enabled) {
+      pulseChannels[0].length.value = 0;
+    }
     break;
 
   case 0x4017:

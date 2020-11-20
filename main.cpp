@@ -135,6 +135,7 @@ bool initializeGraphics() {
   // Update the framebuffer when the window is resized
   // This is necessary because, even in fullscreen mode, the screen may be
   // resized a few times (at least in X11/Ubuntu)
+  // TODO: maintain aspect ratio
   glfwSetWindowSizeCallback(glfwWindow.get(), glfwWindowSizeCallback);
   glfwMakeContextCurrent(glfwWindow.get());
 
