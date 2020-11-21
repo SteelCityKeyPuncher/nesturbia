@@ -371,9 +371,6 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
 
     // TODO: NESDEV says that quarter/half frame signals generated if mode flag is set
     break;
-
-  default:
-    break;
   }
 }
 

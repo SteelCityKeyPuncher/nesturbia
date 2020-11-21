@@ -2,6 +2,7 @@
 
 #include "nesturbia/mapper.hpp"
 #include "nesturbia/mappers/mapper0.hpp"
+#include "nesturbia/mappers/mapper1.hpp"
 
 namespace nesturbia {
 
@@ -19,7 +20,7 @@ Mapper::ptr_t Mapper::Create(const void *romData, size_t romDataSize) {
 
   const auto prgRom16KUnits = rom[4];
   const auto chrRom8KUnits = rom[5];
-  const auto mirrorType = static_cast<mirror_t>(rom[6] & 0x1);
+  const auto mirrorType = rom[6].bit(0) ? mirror_t::vertical : mirror_t::horizontal;
   const auto mapperNumber = static_cast<uint8>((rom[6] >> 4) | (rom[7] & 0xF0));
 
   // TODO improve iNES header processing
@@ -50,8 +51,13 @@ Mapper::ptr_t Mapper::Create(const void *romData, size_t romDataSize) {
   case 0:
     return Mapper0::Create(prgRom, chrRom, mirrorType);
 
+  case 1:
+    // TODO: does mirror type matter for MMC1?
+    return Mapper1::Create(prgRom, chrRom);
+
   default:
     // Unknown or unimplemented mapper
+    printf("TODO: unsupported mapper %d\n", (int)mapperNumber);
     return nullptr;
   }
 }

@@ -63,6 +63,7 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/nmi.cpp
   tests/cpu/power.cpp
   tests/mappers/mapper0.cpp
+  tests/mappers/mapper1.cpp
   tests/nesturbia/memory.cpp
   tests/ppu/power.cpp
   tests/ppu/registers.cpp

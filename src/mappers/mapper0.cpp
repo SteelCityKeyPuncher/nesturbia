@@ -46,11 +46,12 @@ uint8 Mapper0::ReadChr(uint16 address) {
     return chrRom[address];
   }
 
+  // TODO: could have CHR-RAM
   return 0;
 }
 
 void Mapper0::WriteChr(uint16, uint8) {
-  // TODO I think NROM is read-only?
+  // TODO: could have CHR-RAM
 }
 
 } // namespace nesturbia

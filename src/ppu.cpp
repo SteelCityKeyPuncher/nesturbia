@@ -7,6 +7,7 @@ namespace nesturbia {
 
 namespace {
 
+// TODO: see if this is 'correct' and allow other palettes to be used
 constexpr std::array<uint32_t, 64> kRgbTable = {
     0x7c7c7c, 0x0000fc, 0x0000bc, 0x4428bc, 0x940084, 0xa80020, 0xa81000, 0x881400,
     0x503000, 0x007800, 0x006800, 0x005800, 0x004058, 0x000000, 0x000000, 0x000000,
@@ -31,6 +32,8 @@ void Ppu::Power() {
   status.latchedData = 0;
   status.spriteOverflow = true;
   status.sprite0Hit = false;
+
+  // TODO: this is 'often set' on boot
   status.vblankStarted = true;
 
   oamaddr = 0;
@@ -327,9 +330,11 @@ bool Ppu::Tick() {
 uint8 Ppu::ReadRegister(uint16 address) {
   assert(address >= 0x2000 && address < 0x4000);
 
-  switch (address & 0x7) {
-  case 2:
-    // The bottom 5 bits are the same as the latched value
+  // $2008-$3fff are mirrors of $2000-$2007
+  switch (0x2000 | (address & 0x7)) {
+  case 0x2002:
+    // PPUSTATUS
+    // The bottom 5 bits are pulled from the latched read/write value
     status.latchedData = latchedValue & 0x1f;
     latchedValue = status;
 
@@ -337,12 +342,13 @@ uint8 Ppu::ReadRegister(uint16 address) {
     addressWriteLatch = false;
     break;
 
-  case 4:
+  case 0x2004:
+    // OAMADDR
     latchedValue = oam[oamaddr];
     break;
 
-  case 7:
-    // PPUDATA ($2007)
+  case 0x2007:
+    // PPUDATA
     // Palette memory ($3f00-$3eff) is internal to the PPU so it can be read in one cycle
     // All other memory read from the PPU must be buffered, taking two cycles to read
     if (vramAddr.address < 0x3f00) {
@@ -358,9 +364,6 @@ uint8 Ppu::ReadRegister(uint16 address) {
 
     vramAddr.address += ctrl.addressIncrement;
     break;
-
-  default:
-    break;
   }
 
   return latchedValue;
@@ -373,32 +376,35 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
   // If a write-only register is read, this value is read instead
   latchedValue = value;
 
-  // Mirror 0x2000-0x2007 in the range 0x2008-0x3fff
-  switch (address & 0x7) {
-  case 0:
+  // $2008-$3fff are mirrors of $2000-$2007
+  switch (0x2000 | (address & 0x7)) {
+  case 0x2000:
+    // PPUCTRL
     ctrl = value;
     vramAddrLatch.fields.nametable = ctrl.nametable;
     break;
 
-  case 1:
+  case 0x2001:
+    // PPUMASK
     mask = value;
     break;
 
-  case 2:
-    // PPUSTATUS is read-only
-    // Nothing to do here
+  case 0x2002:
+    // PPUSTATUS (read-only)
     break;
 
-  case 3:
+  case 0x2003:
+    // OAMADDR
     oamaddr = value;
     break;
 
-  case 4:
+  case 0x2004:
+    // OAMDATA
     oam[oamaddr++] = value;
     break;
 
-  case 5:
-    // PPUSCROLL ($2005)
+  case 0x2005:
+    // PPUSCROLL
     if (!addressWriteLatch) {
       // First write
       // Coarse X is upper 5 bits
@@ -419,8 +425,8 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     addressWriteLatch = !addressWriteLatch;
     break;
 
-  case 6:
-    // PPUADDR ($2006)
+  case 0x2006:
+    // PPUADDR
     if (!addressWriteLatch) {
       // First write
       vramAddrLatch.value &= 0xff;
@@ -436,9 +442,8 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     addressWriteLatch = !addressWriteLatch;
     break;
 
-  case 7:
-  default:
-    // PPUDATA ($2007)
+  case 0x2007:
+    // PPUDATA
     if (vramAddr.address < 0x2000) {
       // Write mapper CHR-ROM/RAM
       cartridge.WriteChr(vramAddr.address, value);
@@ -450,7 +455,7 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
       // $3f00-$3f1f are mirrored up to $3fff
       auto paletteAddr = vramAddr.address & 0x1f;
 
-      // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
+      // $3f10/$3f14/$3f18/$3f1c are mirrors of $3f00/$3f04/$3f08/$3f0c
       if ((paletteAddr & 0x13) == 0x10) {
         paletteAddr &= ~0x10;
       }
@@ -482,7 +487,7 @@ uint8 Ppu::read(uint16 address) {
   // $3f00-$3f1f are mirrored up to $3fff
   auto paletteAddr = address & 0x1f;
 
-  // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
+  // $3f10/$3f14/$3f18/$3f1c are mirrors of $3f00/$3f04/$3f08/$3f0c
   if ((paletteAddr & 0x13) == 0x10) {
     paletteAddr &= ~0x10;
   }
@@ -495,11 +500,20 @@ namespace {
 uint16 nametableMap(Mapper::mirror_t mirrorType, uint16 address) {
   switch (mirrorType) {
   case Mapper::mirror_t::horizontal:
-    // Horizontal mapping ties bit A11 to A10
+    // Horizontal mapping ties address bit A11 to A10 in the mapper
     return ((address >> 1) & 0x400) | (address & 0x3ff);
 
   case Mapper::mirror_t::vertical:
+    return address & 0x7ff;
+
+  case Mapper::mirror_t::oneScreenLower:
+    return address & 0x3ff;
+
+  case Mapper::mirror_t::oneScreenHigher:
+    return 0x400 | (address & 0x3ff);
+
   default:
+    // TODO: handle other types for MMC1 (and potentially others)
     return address & 0x7ff;
   }
 }

@@ -11,7 +11,9 @@ namespace nesturbia {
 struct Mapper {
   // Types
   using ptr_t = std::unique_ptr<Mapper>;
-  enum class mirror_t { horizontal = 0, vertical = 1 };
+
+  // TODO: needs a 4-way type?
+  enum class mirror_t { horizontal, vertical, oneScreenLower, oneScreenHigher };
 
   // Public functions
   static ptr_t Create(const void *romData, size_t romDataSize);

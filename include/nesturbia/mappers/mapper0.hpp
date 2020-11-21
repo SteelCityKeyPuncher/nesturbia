@@ -7,6 +7,7 @@
 
 namespace nesturbia {
 
+// Mapper 0: aka NROM
 struct Mapper0 : public Mapper {
   // Data
   std::vector<uint8> prgRom;
