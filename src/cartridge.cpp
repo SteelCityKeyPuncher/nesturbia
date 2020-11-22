@@ -1,4 +1,8 @@
+// TODO: temporary for MD5 below
+#include <iostream>
+
 #include "nesturbia/cartridge.hpp"
+#include "nesturbia/util/md5.hpp"
 
 namespace nesturbia {
 
@@ -7,6 +11,10 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
   if (!mapper) {
     return false;
   }
+
+  // TODO: temporary testing
+  std::cout << "MD5: " << md5(reinterpret_cast<const uint8 *>(romData) + 16, romDataSize - 16)
+            << std::endl;
 
   return true;
 }
