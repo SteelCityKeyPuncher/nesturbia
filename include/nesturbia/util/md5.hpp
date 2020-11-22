@@ -6,6 +6,8 @@
 #include <cstring>
 #include <string>
 
+namespace nesturbia {
+
 static inline std::string md5(const void *message, size_t length) {
   auto round = [](uint32_t *X, const uint32_t *M) {
     static constexpr std::array<uint32_t, 16> S = {7, 12, 17, 22, 5, 9,  14, 20,
@@ -77,7 +79,7 @@ static inline std::string md5(const void *message, size_t length) {
   memcpy(&buf[56], &lengthOriginalBits, 8);
   round(digest.data(), reinterpret_cast<const uint32_t *>(buf.data()));
 
-  std::string hashStr;
+  std::string hashStr = "0x";
   auto digestBytes = reinterpret_cast<const uint8_t *>(digest.data());
   for (size_t i = 0; i < 16; i++) {
     hashStr += "0123456789abcdef"[digestBytes[i] >> 4];
@@ -86,5 +88,7 @@ static inline std::string md5(const void *message, size_t length) {
 
   return hashStr;
 }
+
+} // namespace nesturbia
 
 #endif // UTIL_MD5_HPP_INCLUDED

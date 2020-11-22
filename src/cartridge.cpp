@@ -1,7 +1,8 @@
-// TODO: temporary for MD5 below
+// TODO: temporary for MD5/CRC32 below
 #include <iostream>
 
 #include "nesturbia/cartridge.hpp"
+#include "nesturbia/util/crc32.hpp"
 #include "nesturbia/util/md5.hpp"
 
 namespace nesturbia {
@@ -14,6 +15,8 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
 
   // TODO: temporary testing
   std::cout << "MD5: " << md5(reinterpret_cast<const uint8 *>(romData) + 16, romDataSize - 16)
+            << std::endl;
+  std::cout << "CRC-32: " << crc32(reinterpret_cast<const uint8 *>(romData) + 16, romDataSize - 16)
             << std::endl;
 
   return true;
