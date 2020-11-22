@@ -59,8 +59,6 @@ bool Ppu::Tick() {
 
   if (scanline < 240 || scanline == 261) {
     // Line 0-239 (visible) / 261 (pre-rendering)
-    // TODO clear secondary OAM
-
     if (scanline == 261 && dot == 1) {
       // Clear PPUSTATUS flags when (scanline == 261 / dot == 1)
       status.spriteOverflow = false;
@@ -94,43 +92,46 @@ bool Ppu::Tick() {
           // If that bit isn't set, then don't render sprites in those pixels
           if (mask.showSpritesInLeftmost8Px || x >= 8) {
             for (int i = 7; i >= 0; i--) {
-              if (oamPrimary[i].id == 64)
-                continue; // Void entry.
+              if (oamPrimary[i].id == 64) {
+                // Empty entry
+                continue;
+              }
+
               unsigned sprX = x - oamPrimary[i].x;
-              if (sprX >= 8)
-                continue; // Not in range.
-              if (oamPrimary[i].attributes & 0x40)
-                sprX ^= 7; // Horizontal flip.
+              if (sprX >= 8) {
+                // Out of range
+                continue;
+              }
 
-              uint8 sprPalette =
-                  (oamPrimary[i].dataH.bit(7 - sprX) << 1) | oamPrimary[i].dataL.bit(7 - sprX);
-              if (sprPalette == 0)
-                continue; // Transparent pixel.
+              if (oamPrimary[i].attributes.bit(6)) {
+                // Horizontal flipping
+                sprX ^= 7;
+              }
 
-              if (oamPrimary[i].id == 0 && paletteIndex && x != 255)
+              uint8 sprPalette = oamPrimary[i].dataH.bit(7 - sprX) << 1;
+              sprPalette |= oamPrimary[i].dataL.bit(7 - sprX);
+              if (sprPalette == 0) {
+                // Transparent pixel
+                continue;
+              }
+
+              if (oamPrimary[i].id == 0 && paletteIndex && x != 255) {
                 status.sprite0Hit = true;
+              }
 
               sprPalette |= (oamPrimary[i].attributes & 3) << 2;
-              objPalette = sprPalette + 16;
-              objPriority = oamPrimary[i].attributes & 0x20;
+              objPalette = sprPalette | 0x10;
+              objPriority = oamPrimary[i].attributes.bit(5);
             }
           }
         }
       }
 
-      if (objPalette && (paletteIndex == 0 || objPriority == false))
+      if (objPalette && (paletteIndex == 0 || !objPriority)) {
         paletteIndex = objPalette;
-
-      // TODO could make a common function since this logic exists in PPUDATA code
-      // TODO is this necessary based on code above?
-      paletteIndex &= 0x1f;
-
-      // $3f10/$3f14/$3f18/$3f1C are mirrors of $3f00/$3f04/$3f08/$3f0c
-      if ((paletteIndex & 0x13) == 0x10) {
-        paletteIndex &= ~0x10;
       }
 
-      const auto rgb = kRgbTable[paletteRam[paletteIndex]];
+      const auto rgb = kRgbTable[read(0x3f00 | paletteIndex)];
       uint8 *pixel = &pixels[(scanline * 256 + x) * 3];
 
       pixel[0] = (rgb >> 16) & 0xff;

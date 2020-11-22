@@ -16,8 +16,6 @@ struct Mapper {
   enum class mirror_t { horizontal, vertical, oneScreenLower, oneScreenHigher };
 
   // Public functions
-  static ptr_t Create(const void *romData, size_t romDataSize);
-
   [[nodiscard]] virtual mirror_t GetMirrorType() const = 0;
 
   virtual uint8 Read(uint16 address) = 0;
