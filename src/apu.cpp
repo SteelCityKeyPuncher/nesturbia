@@ -79,7 +79,24 @@ void Apu::Tick() {
         triangleChannel.linearCounter.reload = false;
       }
 
-      // TODO other waveforms
+      // Noise: envelope
+      if (noiseChannel.envelope.reload) {
+        noiseChannel.envelope.reload = false;
+        noiseChannel.envelope.divider = noiseChannel.envelope.count;
+        noiseChannel.envelope.volume = 0xf;
+      } else {
+        if (noiseChannel.envelope.divider == 0) {
+          if (noiseChannel.envelope.volume == 0) {
+            noiseChannel.envelope.volume = 0xf;
+          } else {
+            --noiseChannel.envelope.volume;
+          }
+
+          noiseChannel.envelope.divider = noiseChannel.envelope.count;
+        } else {
+          --noiseChannel.envelope.divider;
+        }
+      }
     }
 
     // Half frames occur on step 2 and 4
@@ -146,7 +163,12 @@ void Apu::Tick() {
         --triangleChannel.length.value;
       }
 
-      // TODO other waveforms
+      // Noise: length counter
+      if (!noiseChannel.length.halt && noiseChannel.length.value != 0) {
+        --noiseChannel.length.value;
+      }
+
+      // TODO other waveforms?
     }
 
     // Set the IRQ on step 4 (mode 0 only)
@@ -171,6 +193,19 @@ void Apu::Tick() {
       } else {
         --pulse.timerCounter;
       }
+    }
+
+    // Noise channel timer
+    if (noiseChannel.timerCounter == 0) {
+      noiseChannel.timerCounter = noiseChannel.period;
+
+      const auto bit0 = noiseChannel.shiftRegister.bit(0);
+      const auto bit1 = noiseChannel.shiftRegister.bit((noiseChannel.loop ? 1 : 1));
+
+      noiseChannel.shiftRegister >>= 1;
+      noiseChannel.shiftRegister |= ((bit0 ^ bit1) << 14);
+    } else {
+      --noiseChannel.timerCounter;
     }
   }
 
@@ -214,7 +249,6 @@ void Apu::Tick() {
   }
 
   // Triangle output
-  // TODO check enabled ($4015 flag)
   if (triangleChannel.enabled && triangleChannel.length.value != 0 &&
       triangleChannel.linearCounter.value != 0) {
     // TODO move somewhere else?
@@ -224,6 +258,14 @@ void Apu::Tick() {
 
     // TODO: do proper mixing logic
     sampleSum += 0.00851 * kTriangleTable[triangleChannel.dutyIndex];
+  }
+
+  // Noise output
+  if (noiseChannel.enabled && noiseChannel.length.value != 0 &&
+      !noiseChannel.shiftRegister.bit(0)) {
+    // TODO: do proper mixing logic
+    sampleSum += 0.00494 * (noiseChannel.envelope.disabled ? noiseChannel.envelope.volume
+                                                           : noiseChannel.envelope.divider);
   }
 
   ++numSamples;
@@ -336,16 +378,47 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
   } break;
 
   case 0x400c:
-  case 0x400e:
+    noiseChannel.length.halt = value.bit(5);
+    noiseChannel.envelope.loop = value.bit(5);
+    noiseChannel.envelope.disabled = value.bit(4);
+    noiseChannel.envelope.volume = value & 0xf;
+
+    // TODO double-check this
+    noiseChannel.envelope.reload = true;
+    break;
+
+  case 0x400e: {
+    noiseChannel.loop = value.bit(7);
+
+    // TODO move somewhere else?
+    constexpr std::array<uint16_t, 16> kNoisePeriod = {4,   8,   16,  32,  64,  96,   128,  160,
+                                                       202, 254, 380, 508, 762, 1016, 2034, 4068};
+
+    noiseChannel.period = kNoisePeriod[value & 0xf];
+  } break;
+
   case 0x400f:
+    // Length counter load (L)
+    noiseChannel.length.value = kLengthCounterLookupTable[value >> 3];
+
+    // Side effect: Reload the noise channel envelope next APU tick
+    noiseChannel.envelope.reload = true;
+    break;
+
   case 0x4010:
   case 0x4011:
   case 0x4012:
   case 0x4013:
+    // TODO
     break;
 
   case 0x4015:
-    // TODO other channels
+    // TODO other channel (DMC)
+    noiseChannel.enabled = value.bit(3);
+    if (!noiseChannel.enabled) {
+      noiseChannel.length.value = 0;
+    }
+
     triangleChannel.enabled = value.bit(2);
     if (!triangleChannel.enabled) {
       triangleChannel.length.value = 0;

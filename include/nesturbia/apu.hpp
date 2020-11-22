@@ -87,7 +87,20 @@ struct Apu {
   };
 
   struct noise_channel_t {
-    // TODO
+    bool enabled = false;
+    bool loop = false;
+
+    length_counter_t length;
+    envelope_t envelope;
+
+    // 12-bit value
+    uint16 period = 0;
+
+    // 12-bit value
+    // TODO where to initialize (other than here obviously)?
+    uint16 timerCounter = 0;
+
+    uint16 shiftRegister = 0;
   };
 
   struct frame_counter_t {
@@ -103,6 +116,7 @@ struct Apu {
 
   std::array<pulse_channel_t, 2> pulseChannels;
   triangle_channel_t triangleChannel;
+  noise_channel_t noiseChannel;
   frame_counter_t frameCounter;
 
   bool isOddCycle;
