@@ -4,12 +4,11 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
-#include <string>
 
 namespace nesturbia {
 
-static inline std::string md5(const void *message, size_t length) {
-  auto round = [](uint32_t *X, const uint32_t *M) {
+static inline std::array<uint8_t, 16> md5(const void *message, size_t length) {
+  auto round = [](std::array<uint32_t, 4> &X, const uint32_t *M) {
     static constexpr std::array<uint32_t, 16> S = {7, 12, 17, 22, 5, 9,  14, 20,
                                                    4, 11, 16, 23, 6, 10, 15, 21};
 
@@ -61,7 +60,7 @@ static inline std::string md5(const void *message, size_t length) {
   std::array<uint32_t, 4> digest = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
 
   while (length >= 64) {
-    round(digest.data(), reinterpret_cast<const uint32_t *>(messageBytes));
+    round(digest, reinterpret_cast<const uint32_t *>(messageBytes));
     messageBytes += 64;
     length -= 64;
   }
@@ -72,21 +71,17 @@ static inline std::string md5(const void *message, size_t length) {
   buf[length] = 0x80;
 
   if (length > 56) {
-    round(digest.data(), reinterpret_cast<const uint32_t *>(buf.data()));
+    round(digest, reinterpret_cast<const uint32_t *>(buf.data()));
     memset(buf.data(), 0, buf.size());
   }
 
   memcpy(&buf[56], &lengthOriginalBits, 8);
-  round(digest.data(), reinterpret_cast<const uint32_t *>(buf.data()));
+  round(digest, reinterpret_cast<const uint32_t *>(buf.data()));
 
-  std::string hashStr = "0x";
-  auto digestBytes = reinterpret_cast<const uint8_t *>(digest.data());
-  for (size_t i = 0; i < 16; i++) {
-    hashStr += "0123456789abcdef"[digestBytes[i] >> 4];
-    hashStr += "0123456789abcdef"[digestBytes[i] & 0xf];
-  }
+  std::array<uint8_t, 16> result;
+  memcpy(result.data(), digest.data(), result.size());
 
-  return hashStr;
+  return result;
 }
 
 } // namespace nesturbia

@@ -1,12 +1,12 @@
 #ifndef UTIL_CRC32_HPP_INCLUDED
 #define UTIL_CRC32_HPP_INCLUDED
 
+#include <cstddef>
 #include <cstdint>
-#include <string>
 
 namespace nesturbia {
 
-static inline std::string crc32(const void *message, size_t length) {
+static inline uint32_t crc32(const void *message, size_t length) {
   uint32_t crc = 0xffffffff;
 
   for (size_t i = 0; i < length; i++) {
@@ -18,13 +18,7 @@ static inline std::string crc32(const void *message, size_t length) {
     crc = (crc >> 8) ^ crcLookup;
   }
 
-  std::string result = "0x";
-  for (int i = 0; i < 8; i++) {
-    result += "0123456789abcdef"[(crc >> 28 & 0xf) ^ 0xf];
-    crc <<= 4;
-  }
-
-  return result;
+  return crc ^ 0xffffffff;
 }
 
 } // namespace nesturbia

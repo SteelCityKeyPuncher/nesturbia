@@ -1,7 +1,7 @@
-#include <cmath> // TODO temporary (remove me)
 #include <cstdint>
 #include <fcntl.h>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -102,12 +102,25 @@ bool parseArguments(int argc, char **argv) {
     return false;
   }
 
+  std::cout << "Loading ROM " << argv[1] << std::endl << std::endl;
+
   // Read the file into a vector
   const auto rom = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), {});
   if (!emulator.LoadRom(rom.data(), rom.size())) {
     std::cerr << "Could not load ROM '" << argv[1] << "'." << std::endl;
     return false;
   }
+
+  // ROM information
+  std::cout << std::hex << std::setfill('0');
+  std::cout << " ROM CRC32: 0x" << std::setw(8) << emulator.cartridge.crc32Hash << std::endl;
+
+  std::cout << " ROM MD5:   0x";
+  for (const auto &byte : emulator.cartridge.md5Hash) {
+    std::cout << std::setw(2) << static_cast<uint32_t>(byte);
+  }
+
+  std::cout << std::endl;
 
   // Success
   return true;

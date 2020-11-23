@@ -1,6 +1,8 @@
 #ifndef NESTURBIA_CARTRIDGE_HPP_INCLUDED
 #define NESTURBIA_CARTRIDGE_HPP_INCLUDED
 
+#include <array>
+
 #include "nesturbia/mapper.hpp"
 
 namespace nesturbia {
@@ -8,6 +10,9 @@ namespace nesturbia {
 struct Cartridge {
   // Data
   Mapper::ptr_t mapper;
+  // TODO: make getters for these?
+  std::array<uint8_t, 16> md5Hash;
+  uint32_t crc32Hash = 0;
 
   // Public functions
   bool LoadRom(const void *romData, size_t romDataSize);

@@ -1,4 +1,5 @@
-// TODO: temporary for MD5/CRC32 below
+// TODO: io* temporary for MD5/CRC32 below
+#include <iomanip>
 #include <iostream>
 #include <vector>
 
@@ -64,9 +65,9 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
     return false;
   }
 
-  // TODO: temporary testing
-  std::cout << "MD5: " << md5(u8RomData + 16, romDataSize - 16) << std::endl;
-  std::cout << "CRC-32: " << crc32(u8RomData + 16, romDataSize - 16) << std::endl;
+  // Calculate ROM hashes
+  crc32Hash = crc32(&rom[16], rom.size() - 16);
+  md5Hash = md5(&rom[16], rom.size() - 16);
 
   return true;
 }
