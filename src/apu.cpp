@@ -56,6 +56,7 @@ void Apu::Tick() {
         } else {
           if (pulse.envelope.divider == 0) {
             pulse.envelope.divider = pulse.envelope.volume;
+
             if (pulse.envelope.count != 0 || pulse.envelope.loop) {
               pulse.envelope.count = (pulse.envelope.count - 1) & 0xf;
             }
@@ -82,17 +83,15 @@ void Apu::Tick() {
       // Noise: envelope
       if (noiseChannel.envelope.reload) {
         noiseChannel.envelope.reload = false;
-        noiseChannel.envelope.divider = noiseChannel.envelope.count;
-        noiseChannel.envelope.volume = 0xf;
+        noiseChannel.envelope.divider = noiseChannel.envelope.volume;
+        noiseChannel.envelope.count = 0xf;
       } else {
         if (noiseChannel.envelope.divider == 0) {
-          if (noiseChannel.envelope.volume == 0) {
-            noiseChannel.envelope.volume = 0xf;
-          } else {
-            --noiseChannel.envelope.volume;
-          }
+          noiseChannel.envelope.divider = noiseChannel.envelope.volume;
 
-          noiseChannel.envelope.divider = noiseChannel.envelope.count;
+          if (noiseChannel.envelope.count != 0 || noiseChannel.envelope.loop) {
+            noiseChannel.envelope.count = (noiseChannel.envelope.count - 1) & 0xf;
+          }
         } else {
           --noiseChannel.envelope.divider;
         }
@@ -200,10 +199,12 @@ void Apu::Tick() {
       noiseChannel.timerCounter = noiseChannel.period;
 
       const auto bit0 = noiseChannel.shiftRegister.bit(0);
-      const auto bit1 = noiseChannel.shiftRegister.bit((noiseChannel.loop ? 1 : 1));
+      const auto bit1 = noiseChannel.shiftRegister.bit((noiseChannel.envelope.loop ? 6 : 1));
+      // if (bit0)
+      // throw "";
 
       noiseChannel.shiftRegister >>= 1;
-      noiseChannel.shiftRegister |= ((bit0 ^ bit1) << 14);
+      noiseChannel.shiftRegister |= (bit0 ^ bit1) << 14;
     } else {
       --noiseChannel.timerCounter;
     }
@@ -265,7 +266,7 @@ void Apu::Tick() {
       !noiseChannel.shiftRegister.bit(0)) {
     // TODO: do proper mixing logic
     sampleSum += 0.00494 * (noiseChannel.envelope.disabled ? noiseChannel.envelope.volume
-                                                           : noiseChannel.envelope.divider);
+                                                           : noiseChannel.envelope.count);
   }
 
   ++numSamples;
@@ -382,13 +383,14 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
     noiseChannel.envelope.loop = value.bit(5);
     noiseChannel.envelope.disabled = value.bit(4);
     noiseChannel.envelope.volume = value & 0xf;
+    noiseChannel.envelope.count = value & 0xf;
 
     // TODO double-check this
     noiseChannel.envelope.reload = true;
     break;
 
   case 0x400e: {
-    noiseChannel.loop = value.bit(7);
+    noiseChannel.envelope.loop = value.bit(7);
 
     // TODO move somewhere else?
     constexpr std::array<uint16_t, 16> kNoisePeriod = {4,   8,   16,  32,  64,  96,   128,  160,

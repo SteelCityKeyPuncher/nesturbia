@@ -14,7 +14,7 @@ A NES emulator written in C++17.
 * [ ] APU
   * [x] Pulse (square wave) channel support
   * [x] Triangle channel support
-  * [ ] Noise channel support
+  * [x] Noise channel support
   * [ ] DMC channel support
 * [ ] Cartridges
   * [x] Mapper 0 (NROM) support
@@ -37,6 +37,11 @@ Install the following dependencies:
 * CMake
 
 ### Getting the Source Code
+
+Use `git submodule init` and `git submodule update` after cloning to pull in the other dependencies:
+* Catch2 (Testing framework)
+* GLFW (Video output and user input)
+* PortAudio (Audio output)
 
 ```bash
 git clone https://github.com/SteelCityKeyPuncher/nesturbia.git

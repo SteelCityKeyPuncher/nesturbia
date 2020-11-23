@@ -20,10 +20,10 @@ TEST_CASE("Apu_Noise_Registers", "[apu]") {
 
   // $400e bit 7 is the 'mode' of the noise channel
   apu.WriteRegister(0x400e, 0x80);
-  CHECK(apu.noiseChannel.loop == true);
+  CHECK(apu.noiseChannel.envelope.loop == true);
 
   apu.WriteRegister(0x400e, 0x00);
-  CHECK(apu.noiseChannel.loop == false);
+  CHECK(apu.noiseChannel.envelope.loop == false);
 
   // TODO add more tests
 }

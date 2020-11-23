@@ -88,7 +88,6 @@ struct Apu {
 
   struct noise_channel_t {
     bool enabled = false;
-    bool loop = false;
 
     length_counter_t length;
     envelope_t envelope;
@@ -100,7 +99,7 @@ struct Apu {
     // TODO where to initialize (other than here obviously)?
     uint16 timerCounter = 0;
 
-    uint16 shiftRegister = 0;
+    uint16 shiftRegister = 1;
   };
 
   struct frame_counter_t {
