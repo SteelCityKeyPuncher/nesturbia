@@ -208,6 +208,47 @@ void Apu::Tick() {
     } else {
       --noiseChannel.timerCounter;
     }
+
+    // DMC channel timer
+    if (dmcChannel.enabled) {
+      if (dmcChannel.length != 0 && dmcChannel.bitCount == 0) {
+        // TODO: read from CPU + CPU stall?
+        dmcChannel.shiftRegister = rand();
+        dmcChannel.bitCount = 8;
+        ++dmcChannel.address;
+
+        if (dmcChannel.address == 0) {
+          dmcChannel.address = 0x8000;
+        }
+
+        --dmcChannel.length;
+        if (dmcChannel.length == 0 && dmcChannel.loop) {
+          dmcChannel.address = dmcChannel.sampleAddress;
+          dmcChannel.length = dmcChannel.sampleLength;
+        }
+      }
+
+      if (dmcChannel.tickValue == 0) {
+        dmcChannel.tickValue = dmcChannel.period;
+
+        if (dmcChannel.bitCount != 0) {
+          if (dmcChannel.shiftRegister.bit(0)) {
+            if (dmcChannel.value <= 125) {
+              dmcChannel.value += 2;
+            }
+          } else {
+            if (dmcChannel.value >= 2) {
+              dmcChannel.value -= 2;
+            }
+          }
+
+          dmcChannel.shiftRegister >>= 1;
+          --dmcChannel.bitCount;
+        }
+      } else {
+        --dmcChannel.tickValue;
+      }
+    }
   }
 
   // Triangle channel code that's executed every CPU cycle
@@ -268,6 +309,10 @@ void Apu::Tick() {
     sampleSum += 0.00494 * (noiseChannel.envelope.disabled ? noiseChannel.envelope.volume
                                                            : noiseChannel.envelope.count);
   }
+
+  // DMC output
+  // TODO: do proper mixing logic
+  sampleSum += 0.00335 * dmcChannel.value;
 
   ++numSamples;
 
@@ -407,15 +452,38 @@ void Apu::WriteRegister(uint16 address, uint8 value) {
     noiseChannel.envelope.reload = true;
     break;
 
-  case 0x4010:
+  case 0x4010: {
+    dmcChannel.irqEnabled = value.bit(7);
+    dmcChannel.loop = value.bit(6);
+
+    // TODO move somewhere else?
+    constexpr std::array<uint16_t, 16> kDmcPeriod = {214, 190, 170, 160, 143, 127, 113, 107,
+                                                     95,  80,  71,  64,  53,  42,  36,  27};
+
+    dmcChannel.period = kDmcPeriod[value & 0xf];
+  } break;
+
   case 0x4011:
+    dmcChannel.value = value & 0x7f;
+    break;
+
   case 0x4012:
+    dmcChannel.sampleAddress = 0xc000 | (value << 6);
+    break;
+
   case 0x4013:
-    // TODO
+    dmcChannel.sampleLength = (value << 4) | 0x1;
     break;
 
   case 0x4015:
-    // TODO other channel (DMC)
+    dmcChannel.enabled = value.bit(4);
+    if (!dmcChannel.enabled) {
+      dmcChannel.length = 0;
+    } else if (dmcChannel.length == 0) {
+      dmcChannel.address = dmcChannel.sampleAddress;
+      dmcChannel.length = dmcChannel.sampleLength;
+    }
+
     noiseChannel.enabled = value.bit(3);
     if (!noiseChannel.enabled) {
       noiseChannel.length.value = 0;

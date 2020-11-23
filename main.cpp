@@ -96,8 +96,8 @@ bool parseArguments(int argc, char **argv) {
   }
 
   // Open the given file
-  auto file = std::ifstream(argv[1], std::ios::binary);
-  if (!file) {
+  auto romFile = std::ifstream(argv[1], std::ios::binary);
+  if (!romFile) {
     std::cerr << "Could not open ROM '" << argv[1] << "'." << std::endl;
     return false;
   }
@@ -105,7 +105,7 @@ bool parseArguments(int argc, char **argv) {
   std::cout << "Loading ROM " << argv[1] << std::endl << std::endl;
 
   // Read the file into a vector
-  const auto rom = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), {});
+  const auto rom = std::vector<uint8_t>(std::istreambuf_iterator<char>(romFile), {});
   if (!emulator.LoadRom(rom.data(), rom.size())) {
     std::cerr << "Could not load ROM '" << argv[1] << "'." << std::endl;
     return false;

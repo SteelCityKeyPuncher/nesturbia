@@ -43,11 +43,14 @@ uint8 Mapper0::ReadChr(uint16 address) {
   }
 
   // TODO: could have CHR-RAM
+  assert(0);
   return 0;
 }
 
-void Mapper0::WriteChr(uint16, uint8) {
-  // TODO: could have CHR-RAM
+void Mapper0::WriteChr(uint16 address, uint8 value) {
+  assert(address < chrRom.size());
+  (void)value;
+  assert(0);
 }
 
 } // namespace nesturbia

@@ -136,11 +136,13 @@ uint8 Mapper1::ReadChr(uint16 address) {
     // TODO: using .at() to detect out of bounds memory accesses
     return chrRam.at(address);
   }
-  assert(0); // TODO testing
+
   if (address < chrRom.size()) {
     return chrRom[address];
   }
 
+  // TODO: testing
+  assert(0);
   return 0;
 }
 
@@ -149,7 +151,16 @@ void Mapper1::WriteChr(uint16 address, uint8 value) {
   if (!chrRam.empty()) {
     // TODO: using .at() to detect out of bounds memory accesses
     chrRam.at(address) = value;
+    return;
   }
+
+  if (address < chrRom.size()) {
+    chrRom[address] = value;
+    return;
+  }
+
+  // TODO: testing
+  assert(0);
 }
 
 } // namespace nesturbia

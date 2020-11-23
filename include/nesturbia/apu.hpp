@@ -102,6 +102,27 @@ struct Apu {
     uint16 shiftRegister = 1;
   };
 
+  struct dmc_channel_t {
+    bool enabled = false;
+    bool irqEnabled = false;
+    bool loop = false;
+
+    uint16 period = 0;
+    uint16 tickValue = 0;
+
+    // 7-bit value
+    uint8 value = 0;
+
+    uint16 address = 0;
+    uint16 length = 0;
+
+    uint16 sampleAddress = 0;
+    uint16 sampleLength = 0;
+
+    uint8 shiftRegister = 0;
+    uint8 bitCount = 0;
+  };
+
   struct frame_counter_t {
     bool resetShiftRegister;
     uint16 shiftRegister;
@@ -116,6 +137,7 @@ struct Apu {
   std::array<pulse_channel_t, 2> pulseChannels;
   triangle_channel_t triangleChannel;
   noise_channel_t noiseChannel;
+  dmc_channel_t dmcChannel;
   frame_counter_t frameCounter;
 
   bool isOddCycle;
