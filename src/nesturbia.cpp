@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "nesturbia/nesturbia.hpp"
 
 namespace nesturbia {
@@ -8,8 +10,8 @@ Nesturbia::Nesturbia()
           [this] { cpuTickCallback(); }),
       ppu(cartridge, [this] { cpu.NMI(); }) {}
 
-void Nesturbia::SetAudioSampleCallback(Apu::sample_callback_t sampleCallback, uint32_t sampleRate) {
-  apu.SetSampleCallback(sampleCallback, sampleRate);
+void Nesturbia::SetAudioSampleCallback(Cpu::sample_callback_t sampleCallback, uint32_t sampleRate) {
+  cpu.SetSampleCallback(sampleCallback, sampleRate);
 }
 
 bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
@@ -18,7 +20,6 @@ bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   }
 
   cpu.Power();
-  apu.Power();
   ppu.Power();
 
   return true;
@@ -47,11 +48,18 @@ uint8 Nesturbia::cpuReadCallback(uint16 address) {
     // PPU registers (and their mirrors)
     return ppu.ReadRegister(address);
   } else if (address < 0x4016) {
-    return apu.ReadRegister(address);
+    // APU register (handled internally)
+    assert(0);
+    return 0;
   } else if (address == 0x4016) {
     return joypads[0].Read();
+  } else if (address == 0x4017) {
+    // TODO: handle 2nd joystick
+    return 0;
   } else if (address < 0x4020) {
-    return apu.ReadRegister(address);
+    // APU register (handled internally)
+    assert(0);
+    return 0;
   } else {
     return cartridge.Read(address);
   }
@@ -65,19 +73,22 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
     // PPU registers (and their mirrors)
     ppu.WriteRegister(address, value);
   } else if (address < 0x4014) {
-    apu.WriteRegister(address, value);
+    // APU register (handled internally)
+    assert(0);
   } else if (address == 0x4014) {
     for (int i = 0; i < 256; i++) {
       ppu.WriteRegister(0x2004, cpuReadCallback(value * 0x100 + i));
     }
   } else if (address == 0x4015) {
-    apu.WriteRegister(address, value);
+    // APU register (handled internally)
+    assert(0);
   } else if (address == 0x4016) {
     // Joypad strobes
     joypads[0].Strobe(value.bit(0));
     joypads[1].Strobe(value.bit(0));
   } else if (address < 0x4020) {
-    apu.WriteRegister(address, value);
+    // APU register (handled internally)
+    assert(0);
   } else {
     cartridge.Write(address, value);
   }
@@ -88,10 +99,6 @@ void Nesturbia::cpuTickCallback() {
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
   isNewFrame = isNewFrame || ppu.Tick();
-
-  // Each CPU tick results in 1 APU tick
-  // (the APU is actually part of the CPU)
-  apu.Tick();
 }
 
 } // namespace nesturbia

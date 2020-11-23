@@ -1,12 +1,12 @@
 add_executable(${PROJECT_NAME}-test
-  tests/apu/channels/dmc.cpp
-  tests/apu/channels/noise.cpp
-  tests/apu/channels/pulse.cpp
-  tests/apu/channels/triangle.cpp
-  tests/apu/framecounter.cpp
-  tests/apu/power.cpp
   tests/cartridge/mappers/mapper0.cpp
   tests/cartridge/mappers/mapper1.cpp
+  tests/cpu/apu/channels/dmc.cpp
+  tests/cpu/apu/channels/noise.cpp
+  tests/cpu/apu/channels/pulse.cpp
+  tests/cpu/apu/channels/triangle.cpp
+  tests/cpu/apu/framecounter.cpp
+  tests/cpu/apu/power.cpp
   tests/cpu/instructions/adc.cpp
   tests/cpu/instructions/and.cpp
   tests/cpu/instructions/asl.cpp
