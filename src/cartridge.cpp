@@ -1,6 +1,4 @@
-// TODO: io* temporary for MD5/CRC32 below
-#include <iomanip>
-#include <iostream>
+#include <cassert>
 #include <vector>
 
 #include "nesturbia/cartridge.hpp"
@@ -89,6 +87,16 @@ Mapper::mirror_t Cartridge::GetMirrorType() const {
 }
 
 uint8 Cartridge::Read(uint16 address) {
+  if (address < 0x6000) {
+    // TODO support expansion ROM
+    assert(0);
+    return 0;
+  }
+
+  if (address < 0x8000) {
+    return workRam[address - 0x6000];
+  }
+
   if (mapper) {
     return mapper->Read(address);
   }
@@ -97,6 +105,17 @@ uint8 Cartridge::Read(uint16 address) {
 }
 
 void Cartridge::Write(uint16 address, uint8 value) {
+  if (address < 0x6000) {
+    // TODO support expansion ROM
+    assert(0);
+    return;
+  }
+
+  if (address < 0x8000) {
+    workRam[address - 0x6000] = value;
+    return;
+  }
+
   if (mapper) {
     mapper->Write(address, value);
   }

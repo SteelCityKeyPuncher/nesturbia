@@ -132,6 +132,14 @@ bool parseArguments(int argc, char **argv) {
   switch (emulator.cartridge.mirrorType) {
   case nesturbia::Mapper::mirror_t::horizontal:
     std::cout << "Horizontal";
+    break;
+  case nesturbia::Mapper::mirror_t::vertical:
+    std::cout << "Vertical";
+    break;
+  default:
+    // TODO: other mirroring types
+    std::cout << "???";
+    break;
   }
   std::cout << std::endl;
   std::cout << " Battery-backed: " << (emulator.cartridge.isBatteryBacked ? "true" : "false")

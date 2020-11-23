@@ -11,8 +11,6 @@ namespace nesturbia {
 struct Mapper1 : public Mapper {
   // Data
   std::vector<uint8> prgRom;
-  // TODO: should be battery backed?
-  std::array<uint8, 0x2000> prgRam;
   std::vector<uint8> chrRom;
   std::vector<uint8> chrRam;
 

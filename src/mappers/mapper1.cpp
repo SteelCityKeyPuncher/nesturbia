@@ -27,16 +27,7 @@ Mapper::mirror_t Mapper1::GetMirrorType() const {
 }
 
 uint8 Mapper1::Read(uint16 address) {
-  if (address < 0x6000) {
-    // TODO: expansion ROM?
-    assert(0);
-    return 0;
-  }
-
-  if (address < 0x8000) {
-    // PRG-RAM
-    return prgRam[address - 0x6000];
-  }
+  assert(address >= 0x8000);
 
   uint8 page16KLow;
   uint8 page16KHigh;
@@ -78,17 +69,7 @@ uint8 Mapper1::Read(uint16 address) {
 }
 
 void Mapper1::Write(uint16 address, uint8 value) {
-  if (address < 0x6000) {
-    // TODO: expansion ROM?
-    assert(0);
-    return;
-  }
-
-  if (address < 0x8000) {
-    // PRG-RAM
-    prgRam[address - 0x6000] = value;
-    return;
-  }
+  assert(address >= 0x8000);
 
   // TODO: writes to the serial port on consecutive cycles are ignored
   // See https://wiki.nesdev.com/w/index.php/MMC1 for more information

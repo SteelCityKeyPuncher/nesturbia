@@ -10,6 +10,10 @@ namespace nesturbia {
 struct Cartridge {
   // Data
   Mapper::ptr_t mapper;
+  // PRG-RAM or battery-backed save RAM
+  // TODO: can be battery backed?
+  std::array<uint8, 0x2000> workRam;
+
   bool isNesV2 = false;
   uint8 prgRom16KUnits = 0;
   uint8 chrRom8KUnits = 0;
