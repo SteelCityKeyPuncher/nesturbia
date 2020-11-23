@@ -22,6 +22,10 @@ TEST_CASE("Nesturbia_Cartridge_Mapper0_Valid", "[mapper]") {
   Cartridge cartridge;
   CHECK(cartridge.LoadRom(rom.data(), 16 + 0x4000 + 0x2000));
 
+  CHECK(cartridge.isNesV2 == false);
+  CHECK(cartridge.prgRom16KUnits == 1);
+  CHECK(cartridge.chrRom8KUnits == 1);
+
   // Validate the CRC32 and MD5 hashes of this 'ROM'
   // Note: hashes don't include the 16-byte header
   CHECK(cartridge.crc32Hash == 0x6ebed2ee);
@@ -42,10 +46,13 @@ TEST_CASE("Nesturbia_Cartridge_Mapper0_Valid", "[mapper]") {
   CHECK(cartridge.md5Hash[0xe] == 0x6b);
   CHECK(cartridge.md5Hash[0xf] == 0x08);
 
+  CHECK(cartridge.mapperNumber == 0);
+
   // Change PRG-ROM to: 2 * 16K
   rom[4] = 2;
 
   CHECK(cartridge.LoadRom(rom.data(), rom.size()));
+  CHECK(cartridge.prgRom16KUnits == 2);
 }
 
 TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidPRGSize", "[mapper]") {

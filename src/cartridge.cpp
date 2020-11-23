@@ -20,10 +20,18 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
     return false;
   }
 
-  const auto prgRom16KUnits = rom[4];
-  const auto chrRom8KUnits = rom[5];
-  const auto mirrorType = rom[6].bit(0) ? Mapper::mirror_t::vertical : Mapper::mirror_t::horizontal;
-  const auto mapperNumber = static_cast<uint8>((rom[6] >> 4) | (rom[7] & 0xF0));
+  prgRom16KUnits = rom[4];
+  chrRom8KUnits = rom[5];
+  mirrorType = rom[6].bit(0) ? Mapper::mirror_t::vertical : Mapper::mirror_t::horizontal;
+  isBatteryBacked = rom[6].bit(1);
+  hasTrainer = rom[6].bit(2);
+  mapperNumber = static_cast<uint8>((rom[6] >> 4) | (rom[7] & 0xf0));
+  isNesV2 = rom[6].bit(3) && !rom[6].bit(2);
+
+  if (hasTrainer) {
+    // TODO: trainers not supported for now
+    return false;
+  }
 
   // TODO improve iNES header processing
 

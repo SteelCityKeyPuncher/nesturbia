@@ -10,9 +10,16 @@ namespace nesturbia {
 struct Cartridge {
   // Data
   Mapper::ptr_t mapper;
+  bool isNesV2 = false;
+  uint8 prgRom16KUnits = 0;
+  uint8 chrRom8KUnits = 0;
   // TODO: make getters for these?
   std::array<uint8_t, 16> md5Hash;
   uint32_t crc32Hash = 0;
+  uint8 mapperNumber = 0;
+  Mapper::mirror_t mirrorType = Mapper::mirror_t::horizontal;
+  bool isBatteryBacked = false;
+  bool hasTrainer = false;
 
   // Public functions
   bool LoadRom(const void *romData, size_t romDataSize);

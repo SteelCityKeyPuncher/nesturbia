@@ -112,15 +112,32 @@ bool parseArguments(int argc, char **argv) {
   }
 
   // ROM information
+  std::cout << "ROM Information" << std::endl;
+  std::cout << " Header:         " << (emulator.cartridge.isNesV2 ? "NES 2.0" : "iNES")
+            << std::endl;
+  std::cout << " PRG-ROM:        " << static_cast<uint32_t>(emulator.cartridge.prgRom16KUnits)
+            << " x 16K" << std::endl;
+  std::cout << " CHR-ROM:        " << static_cast<uint32_t>(emulator.cartridge.chrRom8KUnits)
+            << " x 8K" << std::endl;
   std::cout << std::hex << std::setfill('0');
-  std::cout << " ROM CRC32: 0x" << std::setw(8) << emulator.cartridge.crc32Hash << std::endl;
-
-  std::cout << " ROM MD5:   0x";
+  std::cout << " CRC32:          0x" << std::setw(8) << emulator.cartridge.crc32Hash << std::endl;
+  std::cout << " MD5:            0x";
   for (const auto &byte : emulator.cartridge.md5Hash) {
     std::cout << std::setw(2) << static_cast<uint32_t>(byte);
   }
-
   std::cout << std::endl;
+  std::cout << " Mapper #:       " << static_cast<uint32_t>(emulator.cartridge.mapperNumber)
+            << std::endl;
+  std::cout << " Mirroring:      ";
+  switch (emulator.cartridge.mirrorType) {
+  case nesturbia::Mapper::mirror_t::horizontal:
+    std::cout << "Horizontal";
+  }
+  std::cout << std::endl;
+  std::cout << " Battery-backed: " << (emulator.cartridge.isBatteryBacked ? "true" : "false")
+            << std::endl;
+  std::cout << " Trained:        " << (emulator.cartridge.hasTrainer ? "true" : "false")
+            << std::endl;
 
   // Success
   return true;
