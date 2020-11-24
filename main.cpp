@@ -148,10 +148,10 @@ bool parseArguments(int argc, char **argv) {
   std::cout << " Mirroring:      ";
   switch (emulator.cartridge.mirrorType) {
   case nesturbia::Mapper::mirror_t::horizontal:
-    std::cout << "Horizontal";
+    std::cout << "horizontal";
     break;
   case nesturbia::Mapper::mirror_t::vertical:
-    std::cout << "Vertical";
+    std::cout << "vertical";
     break;
   default:
     // TODO: other mirroring types

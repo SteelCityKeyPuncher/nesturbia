@@ -134,6 +134,10 @@ void Cpu::write(uint16 address, uint8 value) {
     triangleChannel.linearCounter.load = value & 0x7f;
     return;
 
+  case 0x4009:
+    // No-op
+    return;
+
   case 0x400a:
     // Timer (T) low
     triangleChannel.period &= 0x700;
@@ -172,6 +176,10 @@ void Cpu::write(uint16 address, uint8 value) {
 
     // TODO double-check this
     noiseChannel.envelope.reload = true;
+    return;
+
+  case 0x400d:
+    // No-op
     return;
 
   case 0x400e: {
@@ -255,6 +263,17 @@ void Cpu::write(uint16 address, uint8 value) {
     frameCounter.shiftRegister = 0x7fff;
 
     // TODO: NESDEV says that quarter/half frame signals generated if mode flag is set
+    return;
+
+  case 0x4018:
+  case 0x4019:
+  case 0x401a:
+  case 0x401b:
+  case 0x401c:
+  case 0x401d:
+  case 0x401e:
+  case 0x401f:
+    // Used for CPU test mode (normally disabled)
     return;
   }
 
