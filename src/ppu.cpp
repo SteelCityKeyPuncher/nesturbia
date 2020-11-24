@@ -242,7 +242,11 @@ bool Ppu::Tick() {
           oamSecondary[spriteCount].x = oam[i * 4 + 3];
 
           if (++spriteCount == 8) {
-            status.spriteOverflow = true;
+            // TODO: are there other things that should only occur when rendering?
+            // TODO: make a test for this case (somehow)
+            if (mask.showBackground || mask.showSprites) {
+              status.spriteOverflow = true;
+            }
             break;
           }
         }
