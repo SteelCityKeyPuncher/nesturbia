@@ -12,6 +12,7 @@ struct Mapper0 : public Mapper {
   // Data
   std::vector<uint8> prgRom;
   std::vector<uint8> chrRom;
+  std::vector<uint8> chrRam;
   mirror_t mirrorType;
 
   // Public functions

@@ -15,6 +15,11 @@ Mapper::ptr_t Mapper0::Create(const std::vector<uint8> &prgRom, const std::vecto
 
   mapper->prgRom = prgRom;
   mapper->chrRom = chrRom;
+  if (mapper->chrRom.empty()) {
+    // Empty CHR-ROM means that we get 8K CHR-RAM
+    mapper->chrRam.resize(0x2000);
+  }
+
   mapper->mirrorType = mirrorType;
 
   return mapper;
@@ -41,23 +46,27 @@ void Mapper0::WritePRG(uint16 address, uint8) {
   assert(0);
 }
 
+// TODO: can throw exception on out-of-bounds memory access due to .at()
 uint8 Mapper0::ReadCHR(uint16 address) {
-  if (address < chrRom.size()) {
-    return chrRom[address];
+  if (!chrRom.empty()) {
+    return chrRom.at(address);
   }
 
-  // TODO: could have CHR-RAM
+  if (!chrRam.empty()) {
+    return chrRam.at(address);
+  }
+
   assert(0);
   return 0;
 }
 
 void Mapper0::WriteCHR(uint16 address, uint8 value) {
-  if (address < chrRom.size()) {
+  if (address < chrRam.size()) {
+    chrRam[address] = value;
     return;
   }
 
-  (void)value;
-  // TODO temporary assert
+  // TODO: temporary assert
   assert(0);
 }
 

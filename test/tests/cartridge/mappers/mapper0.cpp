@@ -53,6 +53,17 @@ TEST_CASE("Nesturbia_Cartridge_Mapper0_Valid", "[mapper]") {
 
   CHECK(cartridge.LoadRom(rom.data(), rom.size()));
   CHECK(cartridge.prgRom16KUnits == 2);
+
+  // Change CHR-ROM to: 0 * 8K
+  // This effectively allocates 8K of CHR-RAM in the mapper
+  rom[5] = 0;
+
+  CHECK(cartridge.LoadRom(rom.data(), 16 + 2 * 0x4000));
+  CHECK(cartridge.chrRom8KUnits == 0);
+
+  // Write to the RAM to see if we can read it back
+  cartridge.WriteCHR(0x1fff, 0x7e);
+  CHECK(cartridge.ReadCHR(0x1fff) == 0x7e);
 }
 
 TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidPRGSize", "[mapper]") {
