@@ -227,27 +227,29 @@ bool Ppu::Tick() {
     } else if (dot == 257) {
       if (scanline != 261) {
         // Evaluate sprites
-        uint8 spriteCount = 0;
-        for (uint8 i = 0; i < 64; i++) {
-          auto y = oam[i * 4 + 0];
-          int row = (int)scanline - y;
-          if (row < 0 || row >= ctrl.spriteHeight) {
-            continue;
-          }
+        if (mask.showBackground || mask.showSprites) {
+          uint8 spriteCount = 0;
+          for (uint8 i = 0; i < 64; i++) {
+            auto y = oam[i * 4 + 0];
+            int row = (int)scanline - y;
+            if (row < 0 || row >= ctrl.spriteHeight) {
+              continue;
+            }
 
-          oamSecondary[spriteCount].id = i;
-          oamSecondary[spriteCount].y = oam[i * 4 + 0];
-          oamSecondary[spriteCount].tile = oam[i * 4 + 1];
-          oamSecondary[spriteCount].attributes = oam[i * 4 + 2];
-          oamSecondary[spriteCount].x = oam[i * 4 + 3];
+            if (spriteCount < 8) {
+              auto &oamSecondaryEntry = oamSecondary[spriteCount];
 
-          if (++spriteCount == 8) {
-            // TODO: are there other things that should only occur when rendering?
-            // TODO: make a test for this case (somehow)
-            if (mask.showBackground || mask.showSprites) {
+              oamSecondaryEntry.id = i;
+              oamSecondaryEntry.y = y;
+              oamSecondaryEntry.tile = oam[i * 4 + 1];
+              oamSecondaryEntry.attributes = oam[i * 4 + 2];
+              oamSecondaryEntry.x = oam[i * 4 + 3];
+            }
+
+            if (++spriteCount == 9) {
+              // TODO: make a test for this case (somehow)
               status.spriteOverflow = true;
             }
-            break;
           }
         }
       }
