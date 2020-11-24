@@ -19,8 +19,11 @@ A NES emulator written in C++17.
 * [ ] Cartridges
   * [x] Mapper 0 (NROM) support
   * [ ] Mapper 1 (SxROM) support - mostly implemented
-  * [ ] Expansion ROM support
+  * [ ] Mapper 2 (UxROM) support
+  * [ ] Mapper 3 (CNROM) support
+  * [ ] Mapper 4 (TxROM / MMC3) support - barely implemented
   * [ ] Other mappers
+  * [ ] Expansion ROM support
   * [x] Battery-backed memory (e.g, for in-game saving of progress)
 * [ ] Player input
   * [x] Joypad/controller 1 support

@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME}
   src/mappers/mapper0.cpp
   src/mappers/mapper1.cpp
   src/mappers/mapper3.cpp
+  src/mappers/mapper4.cpp
   src/nesturbia.cpp
   src/ppu.cpp
 )
