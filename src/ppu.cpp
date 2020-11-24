@@ -339,6 +339,9 @@ uint8 Ppu::ReadRegister(uint16 address) {
     status.latchedData = latchedValue & 0x1f;
     latchedValue = status;
 
+    // Reading this register clears the VBLANK bit (bit 7)
+    status.vblankStarted = false;
+
     // Reading this register clears the address write latch
     addressWriteLatch = false;
     break;

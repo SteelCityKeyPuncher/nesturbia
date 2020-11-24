@@ -5,6 +5,7 @@
 #include "nesturbia/mapper.hpp"
 #include "nesturbia/mappers/mapper0.hpp"
 #include "nesturbia/mappers/mapper1.hpp"
+#include "nesturbia/mappers/mapper3.hpp"
 #include "nesturbia/util/crc32.hpp"
 #include "nesturbia/util/md5.hpp"
 
@@ -63,6 +64,10 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
   case 1:
     // TODO: does mirror type matter for MMC1?
     mapper = Mapper1::Create(prgRom, chrRom);
+    break;
+
+  case 3:
+    mapper = Mapper3::Create(prgRom, chrRom, mirrorType);
     break;
 
   default:

@@ -764,12 +764,12 @@ static void op_bne(Cpu &cpu) { branch(cpu, !cpu.P.Z); }
 static void op_bpl(Cpu &cpu) { branch(cpu, !cpu.P.N); }
 
 static void op_brk(Cpu &cpu) {
-  ++cpu.PC;
+  // Dummy read
+  cpu.read(cpu.PC++);
   cpu.push16(cpu.PC);
   cpu.push(cpu.P | 0x30);
   cpu.PC = cpu.read16(0xfffe);
   cpu.P.I = true;
-  cpu.tick();
 }
 
 static void op_bvc(Cpu &cpu) { branch(cpu, !cpu.P.V); }

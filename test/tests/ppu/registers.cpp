@@ -106,7 +106,6 @@ TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
   // Ensure that reading PPUSTATUS clears the write latch used by PPUSCROLL/PPUADDR
   ppu.addressWriteLatch = true;
   static_cast<void>(ppu.ReadRegister(0x2002));
-
   CHECK(ppu.addressWriteLatch == false);
 
   // Check other bits of the status register
@@ -115,7 +114,12 @@ TEST_CASE("Ppu_RegPpustatus", "[ppu]") {
   ppu.status.sprite0Hit = true;
   ppu.status.vblankStarted = true;
 
+  // The first read should have an exact copy of PPUSTATUS
+  // After reading, the VBLANK bit (bit 7) should be cleared
   CHECK(ppu.ReadRegister(0x3ffa) == 0xfa);
+
+  // Test that the VBLANK bit is now cleared
+  CHECK(ppu.ReadRegister(0x3ffa) == 0x7a);
 }
 
 TEST_CASE("Ppu_RegOam", "[ppu]") {

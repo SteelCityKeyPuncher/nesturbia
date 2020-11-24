@@ -1,6 +1,7 @@
 add_executable(${PROJECT_NAME}-test
   tests/cartridge/mappers/mapper0.cpp
   tests/cartridge/mappers/mapper1.cpp
+  tests/cartridge/mappers/mapper3.cpp
   tests/cpu/apu/channels/dmc.cpp
   tests/cpu/apu/channels/noise.cpp
   tests/cpu/apu/channels/pulse.cpp

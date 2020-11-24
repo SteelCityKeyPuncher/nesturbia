@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}
   src/joypad.cpp
   src/mappers/mapper0.cpp
   src/mappers/mapper1.cpp
+  src/mappers/mapper3.cpp
   src/nesturbia.cpp
   src/ppu.cpp
 )
