@@ -51,25 +51,25 @@ TEST_CASE("Nesturbia_Mapper1_Control", "[mapper]") {
 
   // Test internal control register ($8000-$9fff)
   // Reset the shift register
-  cartridge.Write(0x8abc, 0x80);
+  cartridge.WritePRG(0x8abc, 0x80);
   CHECK(mapperInternal->shiftRegister.bit(4) == true);
   CHECK((mapperInternal->shiftRegister & 0xf) == 0);
 
   // Shift in 0xf
-  cartridge.Write(0xaaaa, 0x01);
+  cartridge.WritePRG(0xaaaa, 0x01);
   CHECK(mapperInternal->shiftRegister.bit(0) == false);
 
-  cartridge.Write(0xbbbb, 0x01);
+  cartridge.WritePRG(0xbbbb, 0x01);
   CHECK(mapperInternal->shiftRegister.bit(0) == false);
 
-  cartridge.Write(0xcccc, 0x01);
+  cartridge.WritePRG(0xcccc, 0x01);
   CHECK(mapperInternal->shiftRegister.bit(0) == false);
 
-  cartridge.Write(0xdddd, 0x01);
+  cartridge.WritePRG(0xdddd, 0x01);
   CHECK(mapperInternal->shiftRegister.bit(0) == true);
 
   // Final write (bits 14-13 should be 0b00 to write control register)
-  cartridge.Write(0x8000, 0x01);
+  cartridge.WritePRG(0x8000, 0x01);
 
   CHECK(mapperInternal->shiftRegister.bit(0) == false);
   CHECK(mapperInternal->controlRegister.mirrorType == 0x3);
@@ -77,16 +77,16 @@ TEST_CASE("Nesturbia_Mapper1_Control", "[mapper]") {
   CHECK(mapperInternal->controlRegister.chrRomBankMode == true);
 
   // Test internal PRG bank register ($e000-$ffff)
-  cartridge.Write(0xe000, 0x80);
+  cartridge.WritePRG(0xe000, 0x80);
 
   // Lower 4 bits are 10 (0xa or 0b1010)
-  cartridge.Write(0xe000, 0x0);
-  cartridge.Write(0xe000, 0x1);
-  cartridge.Write(0xe000, 0x0);
-  cartridge.Write(0xe000, 0x1);
+  cartridge.WritePRG(0xe000, 0x0);
+  cartridge.WritePRG(0xe000, 0x1);
+  cartridge.WritePRG(0xe000, 0x0);
+  cartridge.WritePRG(0xe000, 0x1);
 
   // Upper bit is 1
-  cartridge.Write(0xe000, 0x1);
+  cartridge.WritePRG(0xe000, 0x1);
 
   CHECK(mapperInternal->prgBankRegister.prgRomBank == 0xa);
   CHECK(mapperInternal->prgBankRegister.prgRamChipEnable == true);

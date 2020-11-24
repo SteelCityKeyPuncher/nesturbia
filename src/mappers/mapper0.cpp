@@ -22,7 +22,7 @@ Mapper::ptr_t Mapper0::Create(const std::vector<uint8> &prgRom, const std::vecto
 
 Mapper::mirror_t Mapper0::GetMirrorType() const { return mirrorType; }
 
-uint8 Mapper0::Read(uint16 address) {
+uint8 Mapper0::ReadPRG(uint16 address) {
   assert(address >= 0x8000);
   address -= 0x8000;
 
@@ -35,9 +35,13 @@ uint8 Mapper0::Read(uint16 address) {
   return prgRom[address];
 }
 
-void Mapper0::Write(uint16 address, uint8) { assert(address >= 0x8000); }
+void Mapper0::WritePRG(uint16 address, uint8) {
+  assert(address >= 0x8000);
+  // TODO: temporary test
+  assert(0);
+}
 
-uint8 Mapper0::ReadChr(uint16 address) {
+uint8 Mapper0::ReadCHR(uint16 address) {
   if (address < chrRom.size()) {
     return chrRom[address];
   }
@@ -47,9 +51,13 @@ uint8 Mapper0::ReadChr(uint16 address) {
   return 0;
 }
 
-void Mapper0::WriteChr(uint16 address, uint8 value) {
-  assert(address < chrRom.size());
+void Mapper0::WriteCHR(uint16 address, uint8 value) {
+  if (address < chrRom.size()) {
+    return;
+  }
+
   (void)value;
+  // TODO temporary assert
   assert(0);
 }
 

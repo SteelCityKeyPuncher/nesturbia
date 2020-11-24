@@ -61,7 +61,7 @@ uint8 Nesturbia::cpuReadCallback(uint16 address) {
     assert(0);
     return 0;
   } else {
-    return cartridge.Read(address);
+    return cartridge.ReadPRG(address);
   }
 }
 
@@ -90,7 +90,7 @@ void Nesturbia::cpuWriteCallback(uint16 address, uint8 value) {
     // APU register (handled internally)
     assert(0);
   } else {
-    cartridge.Write(address, value);
+    cartridge.WritePRG(address, value);
   }
 }
 

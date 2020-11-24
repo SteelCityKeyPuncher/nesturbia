@@ -18,11 +18,11 @@ struct Mapper {
   // Public functions
   [[nodiscard]] virtual mirror_t GetMirrorType() const = 0;
 
-  virtual uint8 Read(uint16 address) = 0;
-  virtual void Write(uint16 address, uint8 value) = 0;
+  virtual uint8 ReadPRG(uint16 address) = 0;
+  virtual void WritePRG(uint16 address, uint8 value) = 0;
 
-  virtual uint8 ReadChr(uint16 address) = 0;
-  virtual void WriteChr(uint16 address, uint8 value) = 0;
+  virtual uint8 ReadCHR(uint16 address) = 0;
+  virtual void WriteCHR(uint16 address, uint8 value) = 0;
 };
 
 } // namespace nesturbia

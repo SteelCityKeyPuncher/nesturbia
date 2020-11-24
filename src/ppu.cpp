@@ -344,7 +344,7 @@ uint8 Ppu::ReadRegister(uint16 address) {
     break;
 
   case 0x2004:
-    // OAMADDR
+    // OAMDATA
     latchedValue = oam[oamaddr];
     break;
 
@@ -447,7 +447,7 @@ void Ppu::WriteRegister(uint16 address, uint8 value) {
     // PPUDATA
     if (vramAddr.address < 0x2000) {
       // Write mapper CHR-ROM/RAM
-      cartridge.WriteChr(vramAddr.address, value);
+      cartridge.WriteCHR(vramAddr.address, value);
     } else if (vramAddr.address < 0x3f00) {
       // Nametable RAM
       vram[nametableMap(cartridge.GetMirrorType(), vramAddr.address)] = value;
@@ -476,7 +476,7 @@ uint8 Ppu::read(uint16 address) {
 
   if (address < 0x2000) {
     // Read mapper CHR-ROM/RAM
-    return cartridge.ReadChr(address);
+    return cartridge.ReadCHR(address);
   }
 
   if (address < 0x3f00) {

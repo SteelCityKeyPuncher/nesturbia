@@ -55,11 +55,11 @@ struct Mapper1 : public Mapper {
 
   [[nodiscard]] mirror_t GetMirrorType() const override;
 
-  uint8 Read(uint16 address) override;
-  void Write(uint16 address, uint8 value) override;
+  uint8 ReadPRG(uint16 address) override;
+  void WritePRG(uint16 address, uint8 value) override;
 
-  uint8 ReadChr(uint16 address) override;
-  void WriteChr(uint16 address, uint8 value) override;
+  uint8 ReadCHR(uint16 address) override;
+  void WriteCHR(uint16 address, uint8 value) override;
 };
 
 } // namespace nesturbia

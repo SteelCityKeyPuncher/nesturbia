@@ -26,7 +26,7 @@ Mapper::mirror_t Mapper1::GetMirrorType() const {
   return kMirrorTypes[controlRegister.mirrorType];
 }
 
-uint8 Mapper1::Read(uint16 address) {
+uint8 Mapper1::ReadPRG(uint16 address) {
   assert(address >= 0x8000);
 
   uint8 page16KLow;
@@ -68,7 +68,7 @@ uint8 Mapper1::Read(uint16 address) {
   return prgRom.at((page16KHigh << 14) | (address & 0x3fff));
 }
 
-void Mapper1::Write(uint16 address, uint8 value) {
+void Mapper1::WritePRG(uint16 address, uint8 value) {
   assert(address >= 0x8000);
 
   // TODO: writes to the serial port on consecutive cycles are ignored
@@ -130,7 +130,7 @@ void Mapper1::Write(uint16 address, uint8 value) {
   }
 }
 
-uint8 Mapper1::ReadChr(uint16 address) {
+uint8 Mapper1::ReadCHR(uint16 address) {
   // TODO: make more efficient
   if (!chrRam.empty()) {
     // TODO: using .at() to detect out of bounds memory accesses
@@ -146,7 +146,7 @@ uint8 Mapper1::ReadChr(uint16 address) {
   return 0;
 }
 
-void Mapper1::WriteChr(uint16 address, uint8 value) {
+void Mapper1::WriteCHR(uint16 address, uint8 value) {
   // TODO: make more efficient
   if (!chrRam.empty()) {
     // TODO: using .at() to detect out of bounds memory accesses

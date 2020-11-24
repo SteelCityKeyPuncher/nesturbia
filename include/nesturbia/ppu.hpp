@@ -62,8 +62,8 @@ struct Ppu {
       grayscale = value.bit(0);
       showBackgroundInLeftmost8Px = value.bit(1);
       showSpritesInLeftmost8Px = value.bit(2);
-      showSprites = value.bit(3);
-      showBackground = value.bit(4);
+      showBackground = value.bit(3);
+      showSprites = value.bit(4);
       emphasizeRed = value.bit(5);
       emphasizeGreen = value.bit(6);
       emphasizeBlue = value.bit(7);

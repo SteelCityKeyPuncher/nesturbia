@@ -86,7 +86,7 @@ Mapper::mirror_t Cartridge::GetMirrorType() const {
   return Mapper::mirror_t::horizontal;
 }
 
-uint8 Cartridge::Read(uint16 address) {
+uint8 Cartridge::ReadPRG(uint16 address) {
   if (address < 0x6000) {
     // TODO support expansion ROM
     assert(0);
@@ -98,13 +98,13 @@ uint8 Cartridge::Read(uint16 address) {
   }
 
   if (mapper) {
-    return mapper->Read(address);
+    return mapper->ReadPRG(address);
   }
 
   return 0;
 }
 
-void Cartridge::Write(uint16 address, uint8 value) {
+void Cartridge::WritePRG(uint16 address, uint8 value) {
   if (address < 0x6000) {
     // TODO support expansion ROM
     assert(0);
@@ -117,21 +117,21 @@ void Cartridge::Write(uint16 address, uint8 value) {
   }
 
   if (mapper) {
-    mapper->Write(address, value);
+    mapper->WritePRG(address, value);
   }
 }
 
-uint8 Cartridge::ReadChr(uint16 address) {
+uint8 Cartridge::ReadCHR(uint16 address) {
   if (mapper) {
-    return mapper->ReadChr(address);
+    return mapper->ReadCHR(address);
   }
 
   return 0;
 }
 
-void Cartridge::WriteChr(uint16 address, uint8 value) {
+void Cartridge::WriteCHR(uint16 address, uint8 value) {
   if (mapper) {
-    mapper->WriteChr(address, value);
+    mapper->WriteCHR(address, value);
   }
 }
 

@@ -30,11 +30,11 @@ struct Cartridge {
 
   [[nodiscard]] Mapper::mirror_t GetMirrorType() const;
 
-  uint8 Read(uint16 address);
-  void Write(uint16 address, uint8 value);
+  uint8 ReadPRG(uint16 address);
+  void WritePRG(uint16 address, uint8 value);
 
-  uint8 ReadChr(uint16 address);
-  void WriteChr(uint16 address, uint8 value);
+  uint8 ReadCHR(uint16 address);
+  void WriteCHR(uint16 address, uint8 value);
 
   // Private functions
 };
