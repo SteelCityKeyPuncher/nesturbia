@@ -8,6 +8,7 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/apu/channels/triangle.cpp
   tests/cpu/apu/framecounter.cpp
   tests/cpu/apu/power.cpp
+  tests/cpu/dummyReads.cpp
   tests/cpu/instructions/adc.cpp
   tests/cpu/instructions/and.cpp
   tests/cpu/instructions/asl.cpp

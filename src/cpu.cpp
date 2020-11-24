@@ -635,7 +635,12 @@ template <bool CheckPageCross = true> inline uint16 addr_abx(Cpu &cpu) {
 
   if constexpr (CheckPageCross) {
     if (checkPageCross(v, cpu.X)) {
-      cpu.tick();
+      // A dummy read occurs here because (address + X) crosses a page boundary
+      // * The CPU adds (absolute address) and (register X) without an 8-bit carry
+      // * The CPU starts to fetch from the result of (address + X)
+      // * The CPU sees that it needs to factor in the carry into the upper 8 bits, and takes
+      //   another cycle to read the intended value
+      cpu.read((v & 0xff00) | ((v + cpu.X) & 0xff));
     }
   } else {
     cpu.tick();
@@ -678,7 +683,12 @@ inline uint16 addr_iny(Cpu &cpu) {
   const auto v = static_cast<uint16>(cpu.read(l) | cpu.read(h) << 8);
 
   if (checkPageCross(v, cpu.Y)) {
-    cpu.tick();
+    // A dummy read occurs here because (zero-page + Y) crosses a page boundary
+    // * The CPU adds (zero-page) and (register Y) without an 8-bit carry
+    // * The CPU starts to fetch from the result of (zero-page + Y)
+    // * The CPU sees that it needs to factor in the carry into the upper 8 bits, and takes
+    //   another cycle to read the intended value
+    cpu.read((v & 0xff00) | ((v + cpu.Y) & 0xff));
   }
 
   return v + cpu.Y;
@@ -765,6 +775,7 @@ static void op_bpl(Cpu &cpu) { branch(cpu, !cpu.P.N); }
 
 static void op_brk(Cpu &cpu) {
   // Dummy read
+  // TODO: other instructions can cause dummy reads (PHP, PLP, etc.)?
   cpu.read(cpu.PC++);
   cpu.push16(cpu.PC);
   cpu.push(cpu.P | 0x30);
