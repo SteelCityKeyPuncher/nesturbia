@@ -7,7 +7,7 @@
 using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_CMP_inx", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -36,7 +36,7 @@ TEST_CASE("Cpu_Instructions_CMP_inx", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_zpg", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -62,7 +62,7 @@ TEST_CASE("Cpu_Instructions_CMP_zpg", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_imm", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -86,7 +86,7 @@ TEST_CASE("Cpu_Instructions_CMP_imm", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_abs", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -113,7 +113,7 @@ TEST_CASE("Cpu_Instructions_CMP_abs", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_iny", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -164,7 +164,7 @@ TEST_CASE("Cpu_Instructions_CMP_iny", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_zpx", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -191,7 +191,7 @@ TEST_CASE("Cpu_Instructions_CMP_zpx", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_aby", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -239,7 +239,7 @@ TEST_CASE("Cpu_Instructions_CMP_aby", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CMP_abx", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };

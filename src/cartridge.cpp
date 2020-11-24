@@ -83,6 +83,21 @@ bool Cartridge::LoadRom(const void *romData, size_t romDataSize) {
   return true;
 }
 
+bool Cartridge::LoadBatteryBackedRAM(const void *ramData, size_t ramDataSize) {
+  if (!mapper || !isBatteryBacked) {
+    // Cartridge not loaded or doesn't save to a battery-backed RAM
+    return false;
+  }
+
+  if (!ramData || ramDataSize != workRam.size()) {
+    // Invalid arguments (there must be exactly 8K of non-null data)
+    return false;
+  }
+
+  memcpy(workRam.data(), ramData, ramDataSize);
+  return true;
+}
+
 Mapper::mirror_t Cartridge::GetMirrorType() const {
   if (mapper) {
     return mapper->GetMirrorType();

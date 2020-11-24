@@ -7,7 +7,7 @@
 using namespace nesturbia;
 
 TEST_CASE("Cpu_Instructions_CPX_imm", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -31,7 +31,7 @@ TEST_CASE("Cpu_Instructions_CPX_imm", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CPX_zpg", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };
@@ -57,7 +57,7 @@ TEST_CASE("Cpu_Instructions_CPX_zpg", "[cpu]") {
 }
 
 TEST_CASE("Cpu_Instructions_CPX_abs", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
   auto write = [&memory](uint16_t address, uint8_t value) { memory.at(address) = value; };

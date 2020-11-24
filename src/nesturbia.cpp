@@ -25,6 +25,10 @@ bool Nesturbia::LoadRom(const void *romData, size_t romDataSize) {
   return true;
 }
 
+bool Nesturbia::LoadBatteryBackedRam(const void *ramData, size_t ramDataSize) {
+  return cartridge.LoadBatteryBackedRAM(ramData, ramDataSize);
+}
+
 void Nesturbia::RunFrame(const Joypad::input_t &joypadInput1, const Joypad::input_t &joypadInput2) {
   // Update joypad inputs
   joypads[0].SetInput(joypadInput1);

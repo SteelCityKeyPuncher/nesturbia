@@ -8,7 +8,7 @@
 using namespace nesturbia;
 
 TEST_CASE("Nesturbia_Mapper1_Valid", "[mapper]") {
-  std::array<uint8_t, 0x20010> rom;
+  std::array<uint8_t, 0x20010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -28,7 +28,7 @@ TEST_CASE("Nesturbia_Mapper1_Valid", "[mapper]") {
 }
 
 TEST_CASE("Nesturbia_Mapper1_Control", "[mapper]") {
-  std::array<uint8_t, 0x40010> rom;
+  std::array<uint8_t, 0x40010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';

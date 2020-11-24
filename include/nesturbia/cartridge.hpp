@@ -11,7 +11,6 @@ struct Cartridge {
   // Data
   Mapper::ptr_t mapper;
   // PRG-RAM or battery-backed save RAM
-  // TODO: can be battery backed?
   std::array<uint8, 0x2000> workRam;
 
   bool isNesV2 = false;
@@ -27,6 +26,9 @@ struct Cartridge {
 
   // Public functions
   bool LoadRom(const void *romData, size_t romDataSize);
+
+  // TODO: add a getter? or just pull the public value above (workRam)?
+  bool LoadBatteryBackedRAM(const void *ramData, size_t ramDataSize);
 
   [[nodiscard]] Mapper::mirror_t GetMirrorType() const;
 

@@ -7,7 +7,7 @@
 using namespace nesturbia;
 
 TEST_CASE("Nesturbia_Cartridge_Mapper0_Valid", "[mapper]") {
-  std::array<uint8_t, 0xa010> rom;
+  std::array<uint8_t, 0xa010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -67,7 +67,7 @@ TEST_CASE("Nesturbia_Cartridge_Mapper0_Valid", "[mapper]") {
 }
 
 TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidPRGSize", "[mapper]") {
-  std::array<uint8_t, 0xa010> rom;
+  std::array<uint8_t, 0xa010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -84,7 +84,7 @@ TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidPRGSize", "[mapper]") {
 }
 
 TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidCHRSize", "[mapper]") {
-  std::array<uint8_t, 0xa010> rom;
+  std::array<uint8_t, 0xa010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -102,7 +102,7 @@ TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidCHRSize", "[mapper]") {
 
 TEST_CASE("Nesturbia_Cartridge_Mapper0_InvalidROMSize", "[mapper]") {
   // Test when the ROM file is not large enough to hold header + PRG + CHR sections
-  std::array<uint8_t, 0x10000> rom;
+  std::array<uint8_t, 0x10000> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';

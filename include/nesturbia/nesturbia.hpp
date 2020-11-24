@@ -27,6 +27,7 @@ struct Nesturbia {
   Nesturbia();
   void SetAudioSampleCallback(Cpu::sample_callback_t sampleCallback, uint32_t sampleRate);
   bool LoadRom(const void *romData, size_t romDataSize);
+  bool LoadBatteryBackedRam(const void *ramData, size_t ramDataSize);
   void RunFrame(const Joypad::input_t &joypadInput1 = {}, const Joypad::input_t &joypadInput2 = {});
 
   // Private functions

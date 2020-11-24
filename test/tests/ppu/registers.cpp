@@ -203,7 +203,7 @@ TEST_CASE("Ppu_Ppuaddr", "[ppu]") {
 
 TEST_CASE("Ppu_Ppudata_Chr", "[ppu]") {
   // Create an NROM cartridge
-  std::array<uint8_t, 0xa010> rom;
+  std::array<uint8_t, 0xa010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -247,7 +247,7 @@ TEST_CASE("Ppu_Ppudata_Chr", "[ppu]") {
 
 TEST_CASE("Ppu_Ppudata_NametableMirrorVertical", "[ppu]") {
   // Test vertical mirroring
-  std::array<uint8_t, 0xa010> rom;
+  std::array<uint8_t, 0xa010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';
@@ -304,7 +304,7 @@ TEST_CASE("Ppu_Ppudata_NametableMirrorVertical", "[ppu]") {
 
 TEST_CASE("Ppu_Ppudata_NametableMirrorHorizontal", "[ppu]") {
   // Test horizontal mirroring
-  std::array<uint8_t, 0xa010> rom;
+  std::array<uint8_t, 0xa010> rom = {};
   rom[0] = 'N';
   rom[1] = 'E';
   rom[2] = 'S';

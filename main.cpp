@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <fcntl.h>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -51,6 +52,7 @@ GLuint texture = -1;
 GLuint VAO = -1;
 GLuint VBO = -1;
 GLuint EBO = -1;
+std::string romSaveFilePath;
 
 struct audio_user_data_t {
   std::array<float, 65536> samples;
@@ -95,20 +97,35 @@ bool parseArguments(int argc, char **argv) {
     return false;
   }
 
+  auto romPath = std::filesystem::path(argv[1]);
+
   // Open the given file
-  auto romFile = std::ifstream(argv[1], std::ios::binary);
+  auto romFile = std::ifstream(romPath, std::ios::binary);
   if (!romFile) {
-    std::cerr << "Could not open ROM '" << argv[1] << "'." << std::endl;
+    std::cerr << "Could not open ROM '" << romPath.string() << "'." << std::endl;
     return false;
   }
 
-  std::cout << "Loading ROM " << argv[1] << std::endl << std::endl;
+  std::cout << "Loading ROM '" << romPath.string() << "'" << std::endl << std::endl;
 
   // Read the file into a vector
   const auto rom = std::vector<uint8_t>(std::istreambuf_iterator<char>(romFile), {});
   if (!emulator.LoadRom(rom.data(), rom.size())) {
-    std::cerr << "Could not load ROM '" << argv[1] << "'." << std::endl;
+    std::cerr << "Could not load ROM '" << romPath.string() << "'." << std::endl;
     return false;
+  }
+
+  // Close the ROM after reading
+  romFile.close();
+
+  // See if a save file exists
+  romSaveFilePath = romPath.replace_extension("sav").string();
+  if (auto romSaveFile = std::ifstream(romSaveFilePath, std::ios::binary)) {
+    // Read the file into a vector
+    const auto saveFile = std::vector<uint8_t>(std::istreambuf_iterator<char>(romSaveFile), {});
+    if (emulator.LoadBatteryBackedRam(saveFile.data(), saveFile.size())) {
+      std::cout << "Loaded battery-backed save file '" << romSaveFilePath << "'" << std::endl;
+    }
   }
 
   // ROM information
@@ -374,6 +391,16 @@ void runLoop() {
 
       // TODO input polling
       glfwPollEvents();
+    }
+  }
+
+  // If this ROM is battery-backed (i.e., has saved info that can be loaded next time), then save
+  // the output now
+  if (emulator.cartridge.isBatteryBacked && !romSaveFilePath.empty()) {
+    if (auto saveFile = std::ofstream(romSaveFilePath, std::ios::binary)) {
+      std::cout << "Saving battery-backed save file '" << romSaveFilePath << "'" << std::endl;
+      saveFile.write(reinterpret_cast<const char *>(emulator.cartridge.workRam.data()),
+                     emulator.cartridge.workRam.size());
     }
   }
 }

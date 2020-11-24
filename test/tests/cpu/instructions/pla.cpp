@@ -6,7 +6,7 @@
 #include "nesturbia/cpu.hpp"
 
 TEST_CASE("Cpu_Instructions_PLA", "[cpu]") {
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
   using namespace nesturbia;
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };

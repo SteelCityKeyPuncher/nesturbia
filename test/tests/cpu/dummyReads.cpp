@@ -13,7 +13,7 @@ TEST_CASE("Cpu_DummyReadsBasic", "[cpu]") {
   // TODO: test other possible dummy reads (although not many things rely on this behavior)
 
   // Memory is all zeroes to begin with
-  std::array<uint8_t, 0x10000> memory;
+  std::array<uint8_t, 0x10000> memory = {};
 
   // The read callback is special in that it inverts the value at the given address
   // This is so that we can tell if a given memory address has been read by a dummy read more easily

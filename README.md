@@ -15,13 +15,13 @@ A NES emulator written in C++17.
   * [x] Pulse (square wave) channel support
   * [x] Triangle channel support
   * [x] Noise channel support
-  * [ ] DMC channel support
+  * [x] DMC channel support
 * [ ] Cartridges
   * [x] Mapper 0 (NROM) support
   * [ ] Mapper 1 (SxROM) support - mostly implemented
   * [ ] Expansion ROM support
   * [ ] Other mappers
-  * [ ] Battery-backed memory
+  * [x] Battery-backed memory (e.g, for in-game saving of progress)
 * [ ] Player input
   * [x] Joypad/controller 1 support
   * [ ] Joypad/controller 2 support
