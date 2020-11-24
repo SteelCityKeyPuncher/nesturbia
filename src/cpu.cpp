@@ -42,6 +42,24 @@ void Cpu::Power() {
   isOddCycle = false;
 }
 
+void Cpu::Reset() {
+  // Registers A, X, and Y are unaffected by a reset
+  // S (the stack pointer) is decremented by 3, but nothing is written to the stack
+  S -= 3;
+
+  // The interrrupt disable flag (I) is set
+  // Note that this flag doesn't prevent NMI's since they are unaffected by this flag
+  P.I = true;
+
+  // RAM is not modified by a reset
+  // APU $4017 is not modified by a reset
+
+  // TODO: APU $4015 = 0 (silence all channels)
+  // TODO: APU triange phase is set to 0 so that it outputs 15 on its first step
+  // TODO: APU DCM is ANDed with 0x1
+  // TODO: Most APU's have their frame counter reset - see NESDEV
+}
+
 void Cpu::NMI() { nmi = true; }
 
 void Cpu::SetSampleCallback(sample_callback_t sampleCallback, uint32_t sampleRate) {

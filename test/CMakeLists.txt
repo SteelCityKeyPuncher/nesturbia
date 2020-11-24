@@ -69,6 +69,7 @@ add_executable(${PROJECT_NAME}-test
   tests/cpu/memory.cpp
   tests/cpu/nmi.cpp
   tests/cpu/power.cpp
+  tests/cpu/reset.cpp
   tests/nesturbia/batteryBackedRam.cpp
   tests/nesturbia/memory.cpp
   tests/ppu/power.cpp

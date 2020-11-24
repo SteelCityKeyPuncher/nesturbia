@@ -188,6 +188,7 @@ struct Cpu {
   Cpu(read_callback_t readCallback, write_callback_t writeCallback, tick_callback_t tickCallback);
 
   void Power();
+  void Reset();
   void NMI();
 
   void SetSampleCallback(sample_callback_t sampleCallback, uint32_t sampleRate);
