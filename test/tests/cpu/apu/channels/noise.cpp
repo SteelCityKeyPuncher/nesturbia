@@ -25,10 +25,10 @@ TEST_CASE("Apu_Noise_Registers", "[apu]") {
 
   // $400e bit 7 is the 'mode' of the noise channel
   cpu.write(0x400e, 0x80);
-  CHECK(cpu.noiseChannel.envelope.loop == true);
+  CHECK(cpu.noiseChannel.mode == true);
 
   cpu.write(0x400e, 0x00);
-  CHECK(cpu.noiseChannel.envelope.loop == false);
+  CHECK(cpu.noiseChannel.mode == false);
 
   // TODO add more tests
 }

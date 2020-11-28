@@ -110,6 +110,9 @@ struct Cpu {
   struct noise_channel_t {
     bool enabled = false;
 
+    // Bit 7 of $400e
+    bool mode = false;
+
     length_counter_t length;
     envelope_t envelope;
 
@@ -145,10 +148,11 @@ struct Cpu {
   };
 
   struct frame_counter_t {
-    bool resetShiftRegister;
+    uint8 resetShiftRegisterTicks;
     uint16 shiftRegister;
     bool interruptInhibit;
     bool mode;
+    uint8 interruptFlag;
   };
 
   using read_callback_t = std::function<uint8(uint16)>;
@@ -172,6 +176,7 @@ struct Cpu {
   uint32_t cycles;
 
   bool nmi;
+  bool irq;
 
   // APU-specific
   double ticksPerSample = 0;
@@ -190,6 +195,7 @@ struct Cpu {
   void Power();
   void Reset();
   void NMI();
+  void IRQ();
 
   void SetSampleCallback(sample_callback_t sampleCallback, uint32_t sampleRate);
 
@@ -208,6 +214,9 @@ struct Cpu {
 
   void tick();
   void executeInstruction();
+
+  void apuQuarterFrame();
+  void apuHalfFrame();
 };
 
 } // namespace nesturbia

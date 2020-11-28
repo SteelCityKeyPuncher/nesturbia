@@ -30,12 +30,14 @@ void Cpu::Power() {
   cycles = 7;
 
   nmi = false;
+  irq = false;
 
   // APU-specific
-  frameCounter.resetShiftRegister = false;
+  frameCounter.resetShiftRegisterTicks = 0;
   frameCounter.shiftRegister = 0x7fff;
   frameCounter.interruptInhibit = false;
   frameCounter.mode = false;
+  frameCounter.interruptFlag = 0;
 
   // TODO: should the APU run while the CPU resets?
   // This is technically 'even' if 7 cycles ran during a reset
@@ -62,6 +64,8 @@ void Cpu::Reset() {
 
 void Cpu::NMI() { nmi = true; }
 
+void Cpu::IRQ() { irq = true; }
+
 void Cpu::SetSampleCallback(sample_callback_t sampleCallback, uint32_t sampleRate) {
   this->sampleCallback = sampleCallback;
 
@@ -73,20 +77,39 @@ uint8 Cpu::read(uint16 address) {
   tick();
 
   if (address >= 0x4000 && address < 0x4015) {
+    // Write-only APU registers
     return 0;
   }
 
   if (address == 0x4015) {
-    // TODO: APU status register
-    return 0;
+    // APU status register
+    uint8 value = 0;
+
+    value |= (pulseChannels[0].length.value != 0) << 0;
+    value |= (pulseChannels[1].length.value != 0) << 1;
+    value |= (triangleChannel.length.value != 0) << 2;
+    value |= (noiseChannel.length.value != 0) << 3;
+
+    // TODO: is this correct?
+    value |= (dmcChannel.length != 0) << 4;
+
+    value |= (frameCounter.interruptFlag != 0) << 6;
+    if (frameCounter.interruptFlag != 1) {
+      frameCounter.interruptFlag = 0;
+    }
+
+    // TODO: bit 7
+
+    return value;
   }
 
   if (address > 0x4017 && address < 0x4020) {
+    // Write-only APU registers
     return 0;
   }
 
   if (!readCallback) {
-    return 0xff;
+    return 0;
   }
 
   return readCallback(address);
@@ -99,56 +122,57 @@ uint16 Cpu::read16(uint16 address) {
 void Cpu::write(uint16 address, uint8 value) {
   tick();
 
+  auto &pulseChannel = pulseChannels[static_cast<uint8>(address.bit(2))];
+
   switch (address) {
   case 0x4000:
   case 0x4004:
-    pulseChannels[static_cast<uint8>(address.bit(2))].duty = (value.bit(7) << 1) | value.bit(6);
-    pulseChannels[static_cast<uint8>(address.bit(2))].length.halt = value.bit(5);
-    pulseChannels[static_cast<uint8>(address.bit(2))].envelope.loop = value.bit(5);
-    pulseChannels[static_cast<uint8>(address.bit(2))].envelope.disabled = value.bit(4);
-    pulseChannels[static_cast<uint8>(address.bit(2))].envelope.volume = value & 0xf;
+    pulseChannel.duty = (value.bit(7) << 1) | value.bit(6);
+    pulseChannel.length.halt = value.bit(5);
+    pulseChannel.envelope.loop = value.bit(5);
+    pulseChannel.envelope.disabled = value.bit(4);
+    pulseChannel.envelope.volume = value & 0xf;
     return;
 
   case 0x4001:
   case 0x4005:
-    pulseChannels[static_cast<uint8>(address.bit(2))].sweep.enabled = value.bit(7);
-    pulseChannels[static_cast<uint8>(address.bit(2))].sweep.period = ((value >> 4) & 0x7) + 1;
-    pulseChannels[static_cast<uint8>(address.bit(2))].sweep.negate = value.bit(3);
-    pulseChannels[static_cast<uint8>(address.bit(2))].sweep.shiftAmount = value & 0x7;
+    pulseChannel.sweep.enabled = value.bit(7);
+    pulseChannel.sweep.period = ((value >> 4) & 0x7) + 1;
+    pulseChannel.sweep.negate = value.bit(3);
+    pulseChannel.sweep.shiftAmount = value & 0x7;
 
     // Side effect: set the reload flag
-    pulseChannels[static_cast<uint8>(address.bit(2))].sweep.reload = true;
+    pulseChannel.sweep.reload = true;
 
     // TODO double-check this
-    pulseChannels[static_cast<uint8>(address.bit(2))].envelope.reload = true;
+    pulseChannel.envelope.reload = true;
     return;
 
   case 0x4002:
   case 0x4006:
-    pulseChannels[static_cast<uint8>(address.bit(2))].period &= 0x700;
-    pulseChannels[static_cast<uint8>(address.bit(2))].period |= value;
+    pulseChannel.period &= 0x700;
+    pulseChannel.period |= value;
     return;
 
   case 0x4003:
   case 0x4007:
-    pulseChannels[static_cast<uint8>(address.bit(2))].period &= 0x0ff;
-    pulseChannels[static_cast<uint8>(address.bit(2))].period |= (value & 0x7) << 8;
+    pulseChannel.period &= 0x0ff;
+    pulseChannel.period |= (value & 0x7) << 8;
 
-    // Length counter load (L)
-    pulseChannels[static_cast<uint8>(address.bit(2))].length.value =
-        kLengthCounterLookupTable[value >> 3];
+    // Length counter load (L) - only when channel enabled via $4015 register
+    if (pulseChannel.enabled) {
+      pulseChannel.length.value = kLengthCounterLookupTable[value >> 3];
+    }
 
     // Side effect: Reset the 3-bit ([0-7]) index into the duty cycle table
-    pulseChannels[static_cast<uint8>(address.bit(2))].dutyIndex = 0;
+    pulseChannel.dutyIndex = 0;
 
     // Side effect: Reload the pulse channel envelope next APU tick
-    pulseChannels[static_cast<uint8>(address.bit(2))].envelope.reload = true;
+    pulseChannel.envelope.reload = true;
     return;
 
   case 0x4008:
     triangleChannel.length.halt = value.bit(7);
-
-    triangleChannel.linearCounter.control = value.bit(7);
     triangleChannel.linearCounter.load = value & 0x7f;
     return;
 
@@ -170,12 +194,9 @@ void Cpu::write(uint16 address, uint8 value) {
     triangleChannel.timerCounter = triangleChannel.period;
 
     // Length counter load (L)
-    // TODO move somewhere else?
-    constexpr std::array<uint8_t, 32> kTriangleOutput = {15, 14, 13, 12, 11, 10, 9,  8,  7,  6, 5,
-                                                         4,  3,  2,  1,  0,  0,  1,  2,  3,  4, 5,
-                                                         6,  7,  8,  9,  10, 11, 12, 13, 14, 15};
-
-    triangleChannel.length.value = kTriangleOutput[value >> 3];
+    if (triangleChannel.enabled) {
+      triangleChannel.length.value = kLengthCounterLookupTable[value >> 3];
+    }
 
     // Reload the linear counter
     triangleChannel.linearCounter.reload = true;
@@ -201,19 +222,21 @@ void Cpu::write(uint16 address, uint8 value) {
     return;
 
   case 0x400e: {
-    noiseChannel.envelope.loop = value.bit(7);
+    noiseChannel.mode = value.bit(7);
 
     // TODO move somewhere else?
     constexpr std::array<uint16_t, 16> kNoisePeriod = {4,   8,   16,  32,  64,  96,   128,  160,
                                                        202, 254, 380, 508, 762, 1016, 2034, 4068};
 
     noiseChannel.period = kNoisePeriod[value & 0xf];
-  }
     return;
+  }
 
   case 0x400f:
     // Length counter load (L)
-    noiseChannel.length.value = kLengthCounterLookupTable[value >> 3];
+    if (noiseChannel.enabled) {
+      noiseChannel.length.value = kLengthCounterLookupTable[value >> 3];
+    }
 
     // Side effect: Reload the noise channel envelope next APU tick
     noiseChannel.envelope.reload = true;
@@ -228,8 +251,8 @@ void Cpu::write(uint16 address, uint8 value) {
                                                      95,  80,  71,  64,  53,  42,  36,  27};
 
     dmcChannel.period = kDmcPeriod[value & 0xf];
-  }
     return;
+  }
 
   case 0x4011:
     dmcChannel.value = value & 0x7f;
@@ -275,12 +298,20 @@ void Cpu::write(uint16 address, uint8 value) {
 
   case 0x4017:
     frameCounter.mode = value.bit(7);
+
     frameCounter.interruptInhibit = value.bit(6);
+    if (frameCounter.interruptInhibit) {
+      frameCounter.interruptFlag = 0;
+    }
 
     // TODO: NESDEV says that timer is reset 3 to 4 cycles after this register is written
-    frameCounter.shiftRegister = 0x7fff;
+    frameCounter.resetShiftRegisterTicks = 2;
 
-    // TODO: NESDEV says that quarter/half frame signals generated if mode flag is set
+    // Quarter/half frame signals are generated if mode flag is set during this register write
+    if (frameCounter.mode) {
+      apuQuarterFrame();
+      apuHalfFrame();
+    }
     return;
 
   case 0x4018:
@@ -324,8 +355,8 @@ void Cpu::tick() {
 
   // TODO: move into its own function?
   if (isOddCycle) {
-    if (frameCounter.resetShiftRegister) {
-      frameCounter.resetShiftRegister = false;
+    if (frameCounter.resetShiftRegisterTicks != 0 &&
+        (--frameCounter.resetShiftRegisterTicks == 0)) {
       frameCounter.shiftRegister = 0x7fff;
     } else {
       // 14-bit linear feedback shift register
@@ -344,138 +375,26 @@ void Cpu::tick() {
 
     // Quarter frames occur every step
     if (isStep1 || isStep2 || isStep3 || isStep4) {
-      // Pulse: envelopes
-      for (auto &pulse : pulseChannels) {
-        if (pulse.envelope.reload) {
-          pulse.envelope.reload = false;
-          pulse.envelope.divider = pulse.envelope.volume;
-          pulse.envelope.count = 0xf;
-        } else {
-          if (pulse.envelope.divider == 0) {
-            pulse.envelope.divider = pulse.envelope.volume;
-
-            if (pulse.envelope.count != 0 || pulse.envelope.loop) {
-              pulse.envelope.count = (pulse.envelope.count - 1) & 0xf;
-            }
-          } else {
-            --pulse.envelope.divider;
-          }
-        }
-      }
-
-      // Triangle: linear counter
-      if (triangleChannel.linearCounter.reload) {
-        triangleChannel.linearCounter.value = triangleChannel.linearCounter.load;
-      } else {
-        if (triangleChannel.linearCounter.value != 0) {
-          --triangleChannel.linearCounter.value;
-        }
-      }
-
-      if (!triangleChannel.linearCounter.control) {
-        // Disable reloading if bit 7 of $4008 is cleared
-        triangleChannel.linearCounter.reload = false;
-      }
-
-      // Noise: envelope
-      if (noiseChannel.envelope.reload) {
-        noiseChannel.envelope.reload = false;
-        noiseChannel.envelope.divider = noiseChannel.envelope.volume;
-        noiseChannel.envelope.count = 0xf;
-      } else {
-        if (noiseChannel.envelope.divider == 0) {
-          noiseChannel.envelope.divider = noiseChannel.envelope.volume;
-
-          if (noiseChannel.envelope.count != 0 || noiseChannel.envelope.loop) {
-            noiseChannel.envelope.count = (noiseChannel.envelope.count - 1) & 0xf;
-          }
-        } else {
-          --noiseChannel.envelope.divider;
-        }
-      }
+      apuQuarterFrame();
     }
 
     // Half frames occur on step 2 and 4
     if (isStep2 || isStep4) {
-      // Pulse: sweep + length counters
-      bool isPulse1 = true;
-      for (auto &pulse : pulseChannels) {
-        // Sweep
-        if (pulse.sweep.reload) {
-          // TODO this logic is duplicated below
-          if (pulse.sweep.enabled) {
-            pulse.sweep.divider = pulse.sweep.period;
-            if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
-              auto periodShifted = pulse.period >> pulse.sweep.shiftAmount;
-              if (pulse.sweep.negate) {
-                // Get the one's complement (used by pulse 1)
-                periodShifted = ~periodShifted;
-                if (!isPulse1) {
-                  // Pulse 2 uses the two's complement (one's complement + 1)
-                  ++periodShifted;
-                }
-              }
-
-              pulse.period += periodShifted;
-            }
-          }
-
-          pulse.sweep.reload = false;
-          pulse.sweep.divider = pulse.sweep.period;
-        } else {
-          if (pulse.sweep.divider == 0) {
-            // TODO this logic is duplicated above
-            if (pulse.sweep.enabled) {
-              pulse.sweep.divider = pulse.sweep.period;
-              if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
-                auto periodShifted = pulse.period >> pulse.sweep.shiftAmount;
-                if (pulse.sweep.negate) {
-                  // Get the one's complement (used by pulse 1)
-                  periodShifted = ~periodShifted;
-                  if (!isPulse1) {
-                    // Pulse 2 uses the two's complement (one's complement + 1)
-                    ++periodShifted;
-                  }
-                }
-
-                pulse.period += periodShifted;
-              }
-            }
-          } else {
-            --pulse.sweep.divider;
-          }
-        }
-
-        // Length counter
-        if (!pulse.length.halt && pulse.length.value != 0) {
-          --pulse.length.value;
-        }
-
-        isPulse1 = false;
-      }
-
-      // Triangle: length counter
-      if (!triangleChannel.length.halt && triangleChannel.length.value != 0) {
-        --triangleChannel.length.value;
-      }
-
-      // Noise: length counter
-      if (!noiseChannel.length.halt && noiseChannel.length.value != 0) {
-        --noiseChannel.length.value;
-      }
-
-      // TODO other waveforms?
+      apuHalfFrame();
     }
 
     // Set the IRQ on step 4 (mode 0 only)
     // TODO the IRQ is set continuously in this condition, not just in this tick
-    if (isStep4 && !frameCounter.mode) {
-      //
+    if (isStep4 && !frameCounter.mode && !frameCounter.interruptInhibit) {
+      IRQ();
+      frameCounter.interruptFlag = 1;
+    } else if (frameCounter.interruptFlag) {
+      frameCounter.interruptFlag = 2;
     }
 
     // Flag that the shift register should reset from step 4
     if (isStep4) {
-      frameCounter.resetShiftRegister = true;
+      frameCounter.resetShiftRegisterTicks = 2;
     }
 
     // TODO should this be on even cycles?
@@ -496,7 +415,7 @@ void Cpu::tick() {
       noiseChannel.timerCounter = noiseChannel.period;
 
       const auto bit0 = noiseChannel.shiftRegister.bit(0);
-      const auto bit1 = noiseChannel.shiftRegister.bit((noiseChannel.envelope.loop ? 6 : 1));
+      const auto bit1 = noiseChannel.shiftRegister.bit(noiseChannel.mode ? 6 : 1);
 
       noiseChannel.shiftRegister >>= 1;
       noiseChannel.shiftRegister |= (bit0 ^ bit1) << 14;
@@ -594,7 +513,7 @@ void Cpu::tick() {
                                                         6,  7,  8,  9,  10, 11, 12, 13, 14, 15};
 
     // TODO: do proper mixing logic
-    sampleSum += 0.00851 * kTriangleTable[triangleChannel.dutyIndex];
+    sampleSum += 0.00851 * kTriangleTable.at(triangleChannel.dutyIndex);
   }
 
   // Noise output
@@ -635,12 +554,143 @@ void Cpu::executeInstruction() {
     tick();
     tick();
     return;
+  } else if (irq && !P.I) {
+    // TODO: double check this
+    irq = false;
+    push16(PC);
+    push(P | 0x20);
+    PC = read16(0xfffe);
+    P.I = true;
+    tick();
+    tick();
+    return;
   }
-
-  // TODO IRQ
 
   const auto opcode = read(PC++);
   instructions[opcode](*this);
+}
+
+void Cpu::apuQuarterFrame() {
+  // Pulse: envelopes
+  for (auto &pulse : pulseChannels) {
+    if (pulse.envelope.reload) {
+      pulse.envelope.reload = false;
+      pulse.envelope.divider = pulse.envelope.volume;
+      pulse.envelope.count = 0xf;
+    } else {
+      if (pulse.envelope.divider == 0) {
+        pulse.envelope.divider = pulse.envelope.volume;
+
+        if (pulse.envelope.count != 0 || pulse.envelope.loop) {
+          pulse.envelope.count = (pulse.envelope.count - 1) & 0xf;
+        }
+      } else {
+        --pulse.envelope.divider;
+      }
+    }
+  }
+
+  // Triangle: linear counter
+  if (triangleChannel.linearCounter.reload) {
+    triangleChannel.linearCounter.value = triangleChannel.linearCounter.load;
+  } else {
+    if (triangleChannel.linearCounter.value != 0) {
+      --triangleChannel.linearCounter.value;
+    }
+  }
+
+  if (!triangleChannel.length.halt) {
+    // Disable reloading if bit 7 of $4008 is cleared
+    triangleChannel.linearCounter.reload = false;
+  }
+
+  // Noise: envelope
+  if (noiseChannel.envelope.reload) {
+    noiseChannel.envelope.reload = false;
+    noiseChannel.envelope.divider = noiseChannel.envelope.volume;
+    noiseChannel.envelope.count = 0xf;
+  } else {
+    if (noiseChannel.envelope.divider == 0) {
+      noiseChannel.envelope.divider = noiseChannel.envelope.volume;
+
+      if (noiseChannel.envelope.count != 0 || noiseChannel.envelope.loop) {
+        noiseChannel.envelope.count = (noiseChannel.envelope.count - 1) & 0xf;
+      }
+    } else {
+      --noiseChannel.envelope.divider;
+    }
+  }
+}
+
+void Cpu::apuHalfFrame() {
+  // Pulse: sweep + length counters
+  bool isPulse1 = true;
+  for (auto &pulse : pulseChannels) {
+    // Sweep
+    if (pulse.sweep.reload) {
+      // TODO this logic is duplicated below
+      if (pulse.sweep.enabled) {
+        pulse.sweep.divider = pulse.sweep.period;
+        if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
+          auto periodShifted = pulse.period >> pulse.sweep.shiftAmount;
+          if (pulse.sweep.negate) {
+            // Get the one's complement (used by pulse 1)
+            periodShifted = ~periodShifted;
+            if (!isPulse1) {
+              // Pulse 2 uses the two's complement (one's complement + 1)
+              ++periodShifted;
+            }
+          }
+
+          pulse.period += periodShifted;
+        }
+      }
+
+      pulse.sweep.reload = false;
+      pulse.sweep.divider = pulse.sweep.period;
+    } else {
+      if (pulse.sweep.divider == 0) {
+        // TODO this logic is duplicated above
+        if (pulse.sweep.enabled) {
+          pulse.sweep.divider = pulse.sweep.period;
+          if (pulse.sweep.enabled && pulse.sweep.shiftAmount != 0) {
+            auto periodShifted = pulse.period >> pulse.sweep.shiftAmount;
+            if (pulse.sweep.negate) {
+              // Get the one's complement (used by pulse 1)
+              periodShifted = ~periodShifted;
+              if (!isPulse1) {
+                // Pulse 2 uses the two's complement (one's complement + 1)
+                ++periodShifted;
+              }
+            }
+
+            pulse.period += periodShifted;
+          }
+        }
+      } else {
+        --pulse.sweep.divider;
+      }
+    }
+
+    // Length counter
+    if (!pulse.length.halt && pulse.length.value != 0) {
+      --pulse.length.value;
+    }
+
+    isPulse1 = false;
+  }
+
+  // Triangle: length counter
+  if (!triangleChannel.length.halt && triangleChannel.length.value != 0) {
+    --triangleChannel.length.value;
+  }
+
+  // Noise: length counter
+  if (!noiseChannel.length.halt && noiseChannel.length.value != 0) {
+    --noiseChannel.length.value;
+  }
+
+  // TODO other waveforms?
 }
 
 namespace {

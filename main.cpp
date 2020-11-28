@@ -98,6 +98,10 @@ bool parseArguments(int argc, char **argv) {
   }
 
   auto romPath = std::filesystem::path(argv[1]);
+  if (std::filesystem::is_directory(romPath)) {
+    std::cerr << "ROM path '" << romPath.string() << "' is a directory." << std::endl;
+    return false;
+  }
 
   // Open the given file
   auto romFile = std::ifstream(romPath, std::ios::binary);

@@ -32,6 +32,7 @@ uint8 Mapper3::ReadPRG(uint16 address) {
 }
 
 void Mapper3::WritePRG(uint16 address, uint8 value) {
+  (void)address;
   assert(address >= 0x8000);
 
   // CHR bank select

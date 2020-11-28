@@ -19,7 +19,6 @@ TEST_CASE("Apu_Triangle_Registers", "[apu]") {
   cpu.write(0x4008, 0xff);
 
   CHECK(cpu.triangleChannel.length.halt == true);
-  CHECK(cpu.triangleChannel.linearCounter.control == true);
   CHECK(cpu.triangleChannel.linearCounter.load == 0x7f);
 
   // TODO add more tests

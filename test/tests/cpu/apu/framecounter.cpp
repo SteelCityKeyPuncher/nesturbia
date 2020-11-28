@@ -8,6 +8,7 @@ using namespace nesturbia;
 
 TEST_CASE("cpu_FrameCounter", "[cpu]") {
   // Test the timing of the cpu frame counter
+  // TODO: mode 0 (4 step) vs mode 1 (5 step)
   std::array<uint8_t, 0x10000> memory = {};
 
   auto read = [&memory](uint16_t address) { return memory.at(address); };
@@ -17,6 +18,7 @@ TEST_CASE("cpu_FrameCounter", "[cpu]") {
 
   cpu.Power();
 
+  CHECK(!cpu.frameCounter.mode);
   CHECK(cpu.frameCounter.shiftRegister == 0x7fff);
 
   uint32_t tickNum = 1;
@@ -33,7 +35,7 @@ TEST_CASE("cpu_FrameCounter", "[cpu]") {
 
   CHECK(tickNum == (uint32_t)(3728.5 * 2));
 
-  // Check that the first quarter frame occurs at the correct time
+  // Check that the second quarter frame occurs at the correct time
   // Run 100K iterations in case the condition never becomes true
   for (; tickNum < 100000; tickNum++) {
     if (cpu.frameCounter.shiftRegister == 0x3603) {
@@ -45,7 +47,7 @@ TEST_CASE("cpu_FrameCounter", "[cpu]") {
 
   CHECK(tickNum == (uint32_t)(7456.5 * 2));
 
-  // Check that the first quarter frame occurs at the correct time
+  // Check that the third quarter frame occurs at the correct time
   // Run 100K iterations in case the condition never becomes true
   for (; tickNum < 100000; tickNum++) {
     if (cpu.frameCounter.shiftRegister == 0x2cd3) {
@@ -57,7 +59,7 @@ TEST_CASE("cpu_FrameCounter", "[cpu]") {
 
   CHECK(tickNum == (uint32_t)(11185.5 * 2));
 
-  // Check that the first quarter frame occurs at the correct time
+  // Check that the fourth quarter frame occurs at the correct time
   // Run 100K iterations in case the condition never becomes true
   for (; tickNum < 100000; tickNum++) {
     if (cpu.frameCounter.shiftRegister == 0x0a1f) {
@@ -70,6 +72,9 @@ TEST_CASE("cpu_FrameCounter", "[cpu]") {
   CHECK(tickNum == (uint32_t)(14914.5 * 2));
 
   // Check that the shift register has been reset
+  // TODO: is this the correct number of ticks?
+  cpu.tick();
+  cpu.tick();
   cpu.tick();
   cpu.tick();
 

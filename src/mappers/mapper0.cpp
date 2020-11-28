@@ -41,6 +41,7 @@ uint8 Mapper0::ReadPRG(uint16 address) {
 }
 
 void Mapper0::WritePRG(uint16 address, uint8) {
+  (void)address;
   assert(address >= 0x8000);
   // TODO: temporary test
   assert(0);
